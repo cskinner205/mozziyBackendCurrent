@@ -22,13 +22,10 @@ app.use('/uploads', express.static('uploads'));
 //  const rekognition = new AWS.Rekognition();
 const admin = require('firebase-admin');
 
-var FCM = require('fcm-node');
-var serverKey = 'AAAAtmLyFwM:APA91bFbiHUZcKZJKgJebaA8jogP5uD8u_f2R4MQSuRIzuQHafMqIbniPwXxLEYP8IFS6Dme-QXerd9XV-QqvN3ZA292btgtsCL0eacqDeoSm26Eda5PtbxgzZIn2V8DkdYNrT5poYWy'; //put your server key here
-var fcm = new FCM(serverKey);
 
 const serviceAccount = require('./firebase.json');
 const { datatosend } = require('./privacyPolicy');
-const { userInfo } = require('os');
+
 
 AWS.config.update({
   region: 'us-east-1',
