@@ -151,7 +151,6 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
              
             } catch (err) {
               console.log(err);
-              res.json(err);
             }
           }
         })
