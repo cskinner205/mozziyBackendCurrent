@@ -42,6 +42,7 @@ const upload = multer();
 app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
   try {
     let finalResult = [];
+    console.log("req.files",req.files);
     console.log("faceScanner api is hit @");
     if (!req.files || !req.files.length) {
       return res.status(400).send("No files were uploaded.");
