@@ -1762,7 +1762,7 @@ app.post('/submit', async (req, resp) => {
 
           <script>
             function redirectToExample() {
-              window.location.href = 'http://example.com';
+              window.location.href = '/api/form';
             }
           </script>
         </body>
