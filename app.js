@@ -1785,6 +1785,29 @@ app.post('/submit', async (req, resp) => {
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Account Deletion Confirmation</title>
+                <script>
+                function redirectToExample() {
+                  window.location.href = '/api/deleteAccountform';
+                }
+
+                await function runCode(){
+                  const check1 = await collection.deleteOne({
+                    email: '${email}',
+                  });
+        
+                  console.log(check1);
+        
+                  const check2 = await eventCollection.deleteMany({
+                    userForeignKey: new ObjectId('${result1._id}')
+                  });
+        
+                  if (check2) {
+                    console.log("Events deleted successfully")
+                    window.location.href = '/api/AccountDeletedPage';
+                  }
+                }
+
+              </script>
                 <style>
                   body {
                     font-family: 'Arial', sans-serif;
@@ -1833,31 +1856,6 @@ app.post('/submit', async (req, resp) => {
                 <h2>Are you sure you want to delete this account?</h2>
                 <button onclick="runCode()">Yes</button>
                 <button onclick="redirectToExample()">Go back</button>
-              
-                <script>
-                  function redirectToExample() {
-                    // Replace 'http://example.com' with your actual example URL
-                    window.location.href = '/api/deleteAccountform';
-                  }
-
-                  function runCode(){
-                    const check1 = await collection.deleteOne({
-                      email: '${email}',
-                    });
-          
-                    console.log(check1);
-          
-                    const check2 = await eventCollection.deleteMany({
-                      userForeignKey: new ObjectId('${result1._id}')
-                    });
-          
-                    if (check2) {
-                      console.log("Events deleted successfully")
-                      window.location.href = '/api/AccountDeletedPage';
-                    }
-                  }
-
-                </script>
               </div>
               
               </body>
