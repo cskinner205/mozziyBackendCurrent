@@ -70,7 +70,9 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
       };
 
       const params1 = {
-        Image: sourceImage,
+        Image: {
+          Bytes:sourceImage,
+        }
       };
 
       try {
