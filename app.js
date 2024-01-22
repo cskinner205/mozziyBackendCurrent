@@ -1716,7 +1716,7 @@ app.post('/submit', async(req, res) => {
 
       console.log(check1);
 
-      if (check1) res.send(<h1>"Account Deleted Successfully"</h1>);
+      if (check1) res.send("<h1>Account Deleted Successfully</h1>");
     }
     })
   
