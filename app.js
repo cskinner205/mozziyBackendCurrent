@@ -1719,23 +1719,26 @@ app.post('/submit', async (req, resp) => {
       email: email,
     });
     if (!result1) {
-      const htmlResponse = `
-    <html>
-      <head>
-        <title>Account Not Deleted</title>
-      </head>
-      <body style="text-align: center; padding: 20px;">
-        <h1>Email Does Not exist</h1>
-        <button onclick="redirectToExample()">Go Back to Account delete page</button>
-        <script>
-          function redirectToExample() {
-            window.location.href = '/api/deleteAccountform';
-          }
-        </script>
-      </body>
-    </html>
-  `;
-      resp.send(htmlResponse);
+  //     const htmlResponse = `
+  //   <html>
+  //     <head>
+  //       <title>Account Not Deleted</title>
+  //     </head>
+  //     <body style="text-align: center; padding: 20px;">
+  //       <h1>Email Does Not exist</h1>
+  //       <button onclick="redirectToExample()">Go Back to Account delete page</button>
+  //       <script>
+  //         function redirectToExample() {
+  //           window.location.href = '/api/deleteAccountform';
+  //         }
+  //       </script>
+  //     </body>
+  //   </html>
+  // `;
+  //     resp.send(htmlResponse);
+
+
+  resp.render('AccountNotDeleted.ejs')
     }
     else {
       bcrypt.compare(password, result1.password, async (err, res) => {
@@ -1744,21 +1747,21 @@ app.post('/submit', async (req, resp) => {
           res.send(err)
         }
         else {
-          const check1 = await collection.deleteOne({
-            email: email,
-          });
+          // const check1 = await collection.deleteOne({
+          //   email: email,
+          // });
 
-          console.log(check1);
+          // console.log(check1);
 
-          const check2 = await eventCollection.deleteMany({
-            userForeignKey: new ObjectId(result1._id)
-          });
+          // const check2 = await eventCollection.deleteMany({
+          //   userForeignKey: new ObjectId(result1._id)
+          // });
 
-          if (check2) {
-            console.log("Events deleted successfully")
-          }
+          // if (check2) {
+          //   console.log("Events deleted successfully")
+          // }
 
-          if (check1) {
+          // if (check1) {
             //         const htmlResponse = `
             //   <html>
             //     <head>
@@ -1789,22 +1792,41 @@ app.post('/submit', async (req, resp) => {
                 function redirectToExample() {
                   window.location.href = '/api/deleteAccountform';
                 }
-
+                let data = {
+                  ${email}
+                }
                 async function runCode(){
-                  const check1 = await collection.deleteOne({
-                    email: '${email}',
+                  const response = await fetch('/api/deleteAccountLogic', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/',
+                    },
+                    body: data
                   });
               
-                  console.log(check1);
-              
-                  const check2 = await eventCollection.deleteMany({
-                    userForeignKey: new ObjectId('${result1._id}')
-                  });
-              
-                  if (check2) {
-                    console.log("Events deleted successfully")
+                  // Check the response status or handle accordingly
+                  if (response.ok) {
+                    console.log('Data sent successfully');
+                    // Handle success, e.g., redirect or show a success message
                     window.location.href = '/api/AccountDeletedPage';
+                  } else {
+                    console.error('Failed to send data');
+                    // Handle failure, e.g., show an error message
                   }
+                  // const check1 = await collection.deleteOne({
+                  //   email: '${email}',
+                  // });
+              
+                  // console.log(check1);
+              
+                  // const check2 = await eventCollection.deleteMany({
+                  //   userForeignKey: new ObjectId('${result1._id}')
+                  // });
+              
+                  // if (check2) {
+                  //   console.log("Events deleted successfully")
+                  //   window.location.href = '/api/AccountDeletedPage';
+                  // }
                 }
 
               </script>
@@ -1863,7 +1885,7 @@ app.post('/submit', async (req, resp) => {
     `;
 
             resp.send(htmlResponse);
-          }
+          // }
         }
       })
     }
@@ -1873,6 +1895,10 @@ app.post('/submit', async (req, resp) => {
   }
 });
 
+app.post("/api/deleteAccountLogic",(req,res)=>{
+  console.log("deleteAccountLogic");
+  console.log(req.body);
+})
 
 app.get('/api/image', (req, res) => {
   // Replace 'example.jpg' with the actual filename
