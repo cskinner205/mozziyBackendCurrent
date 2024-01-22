@@ -1781,6 +1781,8 @@ app.post('/submit', async (req, resp) => {
                     console.error('Failed to send data');
                   }
                 }
+                window.runCode = runCode;
+                window.redirectToExample = redirectToExample;
               })
 
               </script>
