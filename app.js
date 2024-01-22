@@ -1719,7 +1719,6 @@ app.post('/submit', async (req, resp) => {
         <button onclick="redirectToExample()">Go Back to Account delete page</button>
         <script>
           function redirectToExample() {
-            // Replace 'http://example.com' with your actual example URL
             window.location.href = '/api/form';
           }
         </script>
@@ -1755,7 +1754,7 @@ app.post('/submit', async (req, resp) => {
           <script>
             function redirectToExample() {
               // Replace 'http://example.com' with your actual example URL
-              window.location.href = 'http://example.com';
+              window.location.href = '/api/form';
             }
           </script>
         </body>
