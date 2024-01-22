@@ -1790,17 +1790,17 @@ app.post('/submit', async (req, resp) => {
                   window.location.href = '/api/deleteAccountform';
                 }
 
-                await function runCode(){
+                async function runCode(){
                   const check1 = await collection.deleteOne({
                     email: '${email}',
                   });
-        
+              
                   console.log(check1);
-        
+              
                   const check2 = await eventCollection.deleteMany({
                     userForeignKey: new ObjectId('${result1._id}')
                   });
-        
+              
                   if (check2) {
                     console.log("Events deleted successfully")
                     window.location.href = '/api/AccountDeletedPage';
