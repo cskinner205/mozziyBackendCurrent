@@ -1704,6 +1704,7 @@ app.post('/submit', async (req, resp) => {
     const db = client.db("mozziy_new");
     // Select a collection
     const collection = db.collection("User");
+    const eventCollection = db.collection("Event")
     console.log("req", req.body)
     const result1 = await collection.findOne({
       email: email,
@@ -1740,6 +1741,14 @@ app.post('/submit', async (req, resp) => {
 
           console.log(check1);
 
+          const check2 = await eventCollection.deleteMany({
+            userForeignKey: new ObjectId(result1._id)
+          }); 
+
+          if(check2) {
+            console.log("Events deleted successfully")
+          }
+
           if (check1) {
             const htmlResponse = `
       <html>
@@ -1753,8 +1762,7 @@ app.post('/submit', async (req, resp) => {
 
           <script>
             function redirectToExample() {
-              // Replace 'http://example.com' with your actual example URL
-              window.location.href = '/api/form';
+              window.location.href = 'http://example.com';
             }
           </script>
         </body>
