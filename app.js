@@ -1693,9 +1693,39 @@ app.get('/api/form', (req, res) => {
 });
 
 
-app.post('/submit', (req, res) => {
+app.post('/submit', async(req, res) => {
   const { email, password } = req.body;
-  res.send(`Submitted: Username - ${email}, Password - ${password}`);
+  try {
+    await client.connect();
+    // Select a database
+    const db = client.db("mozziy_new");
+    // Select a collection
+    const collection = db.collection("User");
+    const result1 = await collection.finOne({
+      _id: new ObjectId(email),     
+    });
+    bcrypt.compare(password, result1.password, async (err, res) => {
+      if (err) {
+        console.log(err);
+        res.send(err)
+      }
+      else{
+      const check1 = await collection.deleteOne({
+        _id: new ObjectId(email),     
+      });
+
+      console.log(check1);
+
+      if (check1) res.send(<h1>"Account Deleted Successfully"</h1>);
+    }
+    })
+  
+
+
+  } catch (err) {
+    console.log("Error==>", err);
+    res.status(400).send({ msg: err, Status: 400, statusCode: 400 });
+  }
 });
 
 
