@@ -1704,7 +1704,7 @@ app.post('/submit', async(req, res) => {
     const db = client.db("mozziy_new");
     // Select a collection
     const collection = db.collection("User");
-    const result1 = await collection.finOne({
+    const result1 = await collection.findOne({
       _id: new ObjectId(email),     
     });
     bcrypt.compare(password, result1.password, async (err, res) => {
