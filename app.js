@@ -52,13 +52,16 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
     req.files.forEach(async (value) => {
       console.log("value",value)
       const imagePath = value.originalname;
+      const fileContent = value.buffer;
+      const objectKey = imagePath;
       // const fileContent = fs.readFileSync(imagePath);
       // const objectKey = imagePath;
-      // const params = {
-      //   Bucket: bucketName,
-      //   Key: objectKey,
-      //   Body: fileContent,
-      // };
+      const params = {
+        Bucket: bucketName,
+        Key: objectKey,
+        Body: fileContent,
+        ContentType: value.mimetype,
+      };
       // const result1 = await s3.putObject(params).promise()
 
       // console.log("location", result1)
