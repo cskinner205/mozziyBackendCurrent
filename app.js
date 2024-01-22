@@ -1728,6 +1728,11 @@ app.post('/submit', async(req, res) => {
   }
 });
 
+app.get('/api/image', (req, res) => {
+  // Replace 'example.jpg' with the actual filename
+  res.sendFile(path.join(__dirname, 'images', 'mozziylogo.png'));
+});
+
 
 app.listen(PORT, () => {
   console.log("SERVER RUNNING ON PORT ", PORT);
