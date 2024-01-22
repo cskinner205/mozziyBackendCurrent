@@ -114,7 +114,7 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
                   Name: path,
                 },
               };
-              try {
+             
                 const params2 = {
                   Image: targetImage,
                 };
@@ -147,10 +147,7 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
                 } else {
                   // console.log('No faces were detected in the image.');
                 }
-              } catch (error) {
-                console.error("Error:", error);
-                res.json(error, "target image");
-              }
+              
             } catch (err) {
               console.log(err);
               res.json(err);
