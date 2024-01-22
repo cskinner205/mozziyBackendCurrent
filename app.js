@@ -57,7 +57,7 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
       // const fileContent = fs.readFileSync(imagePath);
       // const objectKey = imagePath;
       const params = {
-        Bucket: bucketName,
+        Bucket:"find-my-face-2",
         Key: objectKey,
         Body: fileContent,
         ContentType: value.mimetype,
