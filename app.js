@@ -51,7 +51,7 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
     }
     req.files.forEach(async (value) => {
       console.log("value",value)
-      const imagePath = value.location;
+      const imagePath = value.originalname;
       // const fileContent = fs.readFileSync(imagePath);
       // const objectKey = imagePath;
       // const params = {
@@ -71,10 +71,8 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
       };
 
       const params1 = {
-        Image: {
-          Bytes:sourceImage,
-        }
-      };
+        Image:sourceImage,
+      }
 
       try {
         const detectSourceface = await rekognition
