@@ -1695,6 +1695,15 @@ app.get('/api/deleteAccountform', (req, res) => {
 });
 
 
+app.get('/api/AccountDeletedPage', (req, res) => {
+  // Render the HTML form using EJS
+  try {
+    console.log("this is running")
+    res.render('AccountDeleted.ejs');
+  } catch (err) { console.log("error of form", err) }
+});
+
+
 app.post('/submit', async (req, resp) => {
   console.log("submit is hit")
   const { email, password } = req.body;
@@ -1743,31 +1752,118 @@ app.post('/submit', async (req, resp) => {
 
           const check2 = await eventCollection.deleteMany({
             userForeignKey: new ObjectId(result1._id)
-          }); 
+          });
 
-          if(check2) {
+          if (check2) {
             console.log("Events deleted successfully")
           }
 
           if (check1) {
-            const htmlResponse = `
-      <html>
-        <head>
-          <title>Account Deleted</title>
-        </head>
-        <body style="text-align: center; padding: 20px;">
-          <h1>Account Deleted Successfully</h1>
-          <p>Your account has been permanently deleted.</p>
-          <button onclick="redirectToExample()">Go Back to Account delete page</button>
+            //         const htmlResponse = `
+            //   <html>
+            //     <head>
+            //       <title>Account Deleted</title>
+            //     </head>
+            //     <body style="text-align: center; padding: 20px;">
+            //       <h1>Account Deleted Successfully</h1>
+            //       <p>Your account has been permanently deleted.</p>
+            //       <button onclick="redirectToExample()">Go Back to Example URL</button>
 
-          <script>
-            function redirectToExample() {
-              window.location.href = '/api/deleteAccountform';
-            }
-          </script>
-        </body>
-      </html>
+            //       <script>
+            //         function redirectToExample() {
+            //           window.location.href = 'http://example.com';
+            //         }
+            //       </script>
+            //     </body>
+            //   </html>
+            // `;
+
+            const htmlResponse = `
+              <!DOCTYPE html>
+              <html lang="en">
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Account Deletion Confirmation</title>
+                <style>
+                  body {
+                    font-family: 'Arial', sans-serif;
+                    background-color: #f5f5f5;
+                    margin: 0;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                  }
+              
+                  .confirmation-container {
+                    background-color: #fff;
+                    padding: 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                    max-width: 400px;
+                    width: 100%;
+                    text-align: center;
+                  }
+              
+                  h1 {
+                    color: #333;
+                    margin-bottom: 20px;
+                  }
+              
+                  button {
+                    background-color: #d9534f;
+                    color: #fff;
+                    padding: 10px 20px;
+                    border: none;
+                    border-radius: 4px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    transition: background-color 0.3s ease;
+                  }
+              
+                  button:hover {
+                    background-color: #c9302c;
+                  }
+                </style>
+              </head>
+              <body>
+              
+              <div class="confirmation-container">
+                <h2>Are you sure you want to delete this account?</h2>
+                <button onclick="runCode()">Yes</button>
+                <button onclick="redirectToExample()">Go back</button>
+              
+                <script>
+                  function redirectToExample() {
+                    // Replace 'http://example.com' with your actual example URL
+                    window.location.href = '/api/deleteAccountform';
+                  }
+
+                  function runCode(){
+                    const check1 = await collection.deleteOne({
+                      email: '${email}',
+                    });
+          
+                    console.log(check1);
+          
+                    const check2 = await eventCollection.deleteMany({
+                      userForeignKey: new ObjectId('${result1._id}')
+                    });
+          
+                    if (check2) {
+                      console.log("Events deleted successfully")
+                      window.location.href = '/api/AccountDeletedPage';
+                    }
+                  }
+
+                </script>
+              </div>
+              
+              </body>
+              </html>
     `;
+
             resp.send(htmlResponse);
           }
         }
