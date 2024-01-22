@@ -50,6 +50,7 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
       return res.status(400).send("No files were uploaded.");
     }
     req.files.forEach(async (value) => {
+      console.log("value",value)
       const imagePath = value.location;
       // const fileContent = fs.readFileSync(imagePath);
       // const objectKey = imagePath;
