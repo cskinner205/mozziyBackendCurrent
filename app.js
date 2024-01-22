@@ -1758,7 +1758,7 @@ app.post('/submit', async (req, resp) => {
         <body style="text-align: center; padding: 20px;">
           <h1>Account Deleted Successfully</h1>
           <p>Your account has been permanently deleted.</p>
-          <button onclick="redirectToExample()">Go Back to Example URL</button>
+          <button onclick="redirectToExample()">Go Back to Account delete page</button>
 
           <script>
             function redirectToExample() {
