@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const { MongoClient, ObjectId } = require("mongodb");
 require("dotenv").config();
-
+const ejs = require('ejs');
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const salt = 10;
@@ -20,6 +20,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
 //  const rekognition = new AWS.Rekognition();
+const cors = require('cors');
+app.use(cors());
 const admin = require("firebase-admin");
 const serviceAccount = require("./firebase.json");
 const { datatosend } = require("./privacyPolicy");
@@ -57,15 +59,15 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
       // const fileContent = fs.readFileSync(imagePath);
       // const objectKey = imagePath;
       const params = {
-        Bucket: "find-my-face-2",
+        Bucket:"find-my-face-2",
         Key: objectKey,
         Body: fileContent,
         ContentType: value.mimetype,
       };
+      // const result1 = await s3.putObject(params).promise()
       const uploadResult = await s3.upload(params).promise();
 
       console.log("uploadResult", uploadResult)
-
 
       const sourceImage = {
         S3Object: {
@@ -90,7 +92,7 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
           return;
         }
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error:#####", error);
         res.json(error, "source image");
       }
       await client.connect();
@@ -115,7 +117,7 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
                   Name: path,
                 },
               };
-             
+              
                 const params2 = {
                   Image: targetImage,
                 };
@@ -148,9 +150,10 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
                 } else {
                   // console.log('No faces were detected in the image.');
                 }
-             
+  
             } catch (err) {
               console.log(err);
+              
             }
           }
         })
@@ -1671,10 +1674,30 @@ app.post("/api/deleteAccount", async (req, res) => {
 });
 
 app.get("/api/privacyPolicy", (req, res) => {
+  console.log("privacy policy is run")
   res.send(datatosend);
 });
 
 // console.log(datatosend)
+
+app.set('view engine', 'ejs');
+app.set('views', __dirname + '/views');
+
+
+app.get('/api/form', (req, res) => {
+  // Render the HTML form using EJS
+  try{
+    console.log("this is running")
+    res.render('index');
+  }catch(err){console.log("error of form",err)}
+});
+
+
+app.post('/submit', (req, res) => {
+  const { email, password } = req.body;
+  res.send(`Submitted: Username - ${email}, Password - ${password}`);
+});
+
 
 app.listen(PORT, () => {
   console.log("SERVER RUNNING ON PORT ", PORT);
