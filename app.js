@@ -26,6 +26,9 @@ const admin = require("firebase-admin");
 const serviceAccount = require("./firebase.json");
 const { datatosend } = require("./privacyPolicy");
 
+const path = require('path');
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
 AWS.config.update({
   region: "us-east-1",
   accessKeyId: AWS_ACCESS_KEY,
