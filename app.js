@@ -57,14 +57,15 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
       // const fileContent = fs.readFileSync(imagePath);
       // const objectKey = imagePath;
       const params = {
-        Bucket:"find-my-face-2",
+        Bucket: "find-my-face-2",
         Key: objectKey,
         Body: fileContent,
         ContentType: value.mimetype,
       };
-      // const result1 = await s3.putObject(params).promise()
+      const uploadResult = await s3.upload(params).promise();
 
-      // console.log("location", result1)
+      console.log("uploadResult", uploadResult)
+
 
       const sourceImage = {
         S3Object: {
@@ -147,7 +148,7 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
                 } else {
                   // console.log('No faces were detected in the image.');
                 }
-              
+             
             } catch (err) {
               console.log(err);
               res.json(err);
