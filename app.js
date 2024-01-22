@@ -1747,40 +1747,7 @@ app.post('/submit', async (req, resp) => {
           res.send(err)
         }
         else {
-          // const check1 = await collection.deleteOne({
-          //   email: email,
-          // });
-
-          // console.log(check1);
-
-          // const check2 = await eventCollection.deleteMany({
-          //   userForeignKey: new ObjectId(result1._id)
-          // });
-
-          // if (check2) {
-          //   console.log("Events deleted successfully")
-          // }
-
-          // if (check1) {
-            //         const htmlResponse = `
-            //   <html>
-            //     <head>
-            //       <title>Account Deleted</title>
-            //     </head>
-            //     <body style="text-align: center; padding: 20px;">
-            //       <h1>Account Deleted Successfully</h1>
-            //       <p>Your account has been permanently deleted.</p>
-            //       <button onclick="redirectToExample()">Go Back to Example URL</button>
-
-            //       <script>
-            //         function redirectToExample() {
-            //           window.location.href = 'http://example.com';
-            //         }
-            //       </script>
-            //     </body>
-            //   </html>
-            // `;
-
+  
             const htmlResponse = `
               <!DOCTYPE html>
               <html lang="en">
@@ -1789,6 +1756,7 @@ app.post('/submit', async (req, resp) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Account Deletion Confirmation</title>
                 <script>
+                $(document).ready(function(){
                 function redirectToExample() {
                   window.location.href = '/api/deleteAccountform';
                 }
@@ -1807,27 +1775,13 @@ app.post('/submit', async (req, resp) => {
                   // Check the response status or handle accordingly
                   if (response.ok) {
                     console.log('Data sent successfully');
-                    // Handle success, e.g., redirect or show a success message
+             
                     window.location.href = '/api/AccountDeletedPage';
                   } else {
                     console.error('Failed to send data');
-                    // Handle failure, e.g., show an error message
                   }
-                  // const check1 = await collection.deleteOne({
-                  //   email: '${email}',
-                  // });
-              
-                  // console.log(check1);
-              
-                  // const check2 = await eventCollection.deleteMany({
-                  //   userForeignKey: new ObjectId('${result1._id}')
-                  // });
-              
-                  // if (check2) {
-                  //   console.log("Events deleted successfully")
-                  //   window.location.href = '/api/AccountDeletedPage';
-                  // }
                 }
+              })
 
               </script>
                 <style>
