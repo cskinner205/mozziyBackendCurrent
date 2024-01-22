@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const path = require('path');
 const { MongoClient, ObjectId } = require("mongodb");
 require("dotenv").config();
 const ejs = require('ejs');
@@ -25,8 +26,6 @@ app.use(cors());
 const admin = require("firebase-admin");
 const serviceAccount = require("./firebase.json");
 const { datatosend } = require("./privacyPolicy");
-
-const path = require('path');
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
 AWS.config.update({
@@ -49,20 +48,20 @@ const upload = multer();
 app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
   try {
     let finalResult = [];
-    console.log("req.files",req.files);
+    console.log("req.files", req.files);
     console.log("faceScanner api is hit @");
     if (!req.files || !req.files.length) {
       return res.status(400).send("No files were uploaded.");
     }
     req.files.forEach(async (value) => {
-      console.log("value",value)
+      console.log("value", value)
       const imagePath = value.originalname;
       const fileContent = value.buffer;
       const objectKey = imagePath;
       // const fileContent = fs.readFileSync(imagePath);
       // const objectKey = imagePath;
       const params = {
-        Bucket:"find-my-face-2",
+        Bucket: "find-my-face-2",
         Key: objectKey,
         Body: fileContent,
         ContentType: value.mimetype,
@@ -80,7 +79,7 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
       };
 
       const params1 = {
-        Image:sourceImage,
+        Image: sourceImage,
       }
 
       try {
@@ -120,43 +119,43 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
                   Name: path,
                 },
               };
-              
-                const params2 = {
-                  Image: targetImage,
-                };
-                const detectTargetImage = await rekognition
-                  .detectFaces(params2)
-                  .promise();
-                if (detectTargetImage.FaceDetails.length > 0) {
-                  // console.log('Faces were detected in the image.');
-                  const compareObject = {
-                    SourceImage: sourceImage,
-                    TargetImage: targetImage,
-                    SimilarityThreshold: 90, // Adjust the similarity threshold as needed
-                  };
-                  const { FaceMatches } = await rekognition
-                    .compareFaces(compareObject)
-                    .promise();
 
-                  if (FaceMatches && FaceMatches.length > 0) {
-                    await Promise.all(
-                      FaceMatches.map((match) => {
-                        const similarity = match.Similarity;
-                        console.log("similarity:", similarity);
-                        finalResult.push(value);
-                        console.log(finalResult, "finalResult000000");
-                      })
-                    );
-                  } else {
-                    console.log("No matching faces found.");
-                  }
+              const params2 = {
+                Image: targetImage,
+              };
+              const detectTargetImage = await rekognition
+                .detectFaces(params2)
+                .promise();
+              if (detectTargetImage.FaceDetails.length > 0) {
+                // console.log('Faces were detected in the image.');
+                const compareObject = {
+                  SourceImage: sourceImage,
+                  TargetImage: targetImage,
+                  SimilarityThreshold: 90, // Adjust the similarity threshold as needed
+                };
+                const { FaceMatches } = await rekognition
+                  .compareFaces(compareObject)
+                  .promise();
+
+                if (FaceMatches && FaceMatches.length > 0) {
+                  await Promise.all(
+                    FaceMatches.map((match) => {
+                      const similarity = match.Similarity;
+                      console.log("similarity:", similarity);
+                      finalResult.push(value);
+                      console.log(finalResult, "finalResult000000");
+                    })
+                  );
                 } else {
-                  // console.log('No faces were detected in the image.');
+                  console.log("No matching faces found.");
                 }
-  
+              } else {
+                // console.log('No faces were detected in the image.');
+              }
+
             } catch (err) {
               console.log(err);
-              
+
             }
           }
         })
@@ -1689,14 +1688,15 @@ app.set('views', __dirname + '/views');
 
 app.get('/api/form', (req, res) => {
   // Render the HTML form using EJS
-  try{
+  try {
     console.log("this is running")
     res.render('index');
-  }catch(err){console.log("error of form",err)}
+  } catch (err) { console.log("error of form", err) }
 });
 
 
-app.post('/submit', async(req, res) => {
+app.post('/submit', async (req, resp) => {
+  console.log("submit is hit")
   const { email, password } = req.body;
   try {
     await client.connect();
@@ -1704,38 +1704,79 @@ app.post('/submit', async(req, res) => {
     const db = client.db("mozziy_new");
     // Select a collection
     const collection = db.collection("User");
+    console.log("req", req.body)
     const result1 = await collection.findOne({
-      _id: new ObjectId(email),     
+      email: email,
     });
-    bcrypt.compare(password, result1.password, async (err, res) => {
-      if (err) {
-        console.log(err);
-        res.send(err)
-      }
-      else{
-      const check1 = await collection.deleteOne({
-        _id: new ObjectId(email),     
-      });
-
-      console.log(check1);
-
-      if (check1) res.send("<h1>Account Deleted Successfully</h1>");
+    if (!result1) {
+      const htmlResponse = `
+    <html>
+      <head>
+        <title>Account Not Deleted</title>
+      </head>
+      <body style="text-align: center; padding: 20px;">
+        <h1>Email Does Not exist</h1>
+        <button onclick="redirectToExample()">Go Back to Account delete page</button>
+        <script>
+          function redirectToExample() {
+            // Replace 'http://example.com' with your actual example URL
+            window.location.href = '/api/form';
+          }
+        </script>
+      </body>
+    </html>
+  `;
+      resp.send(htmlResponse);
     }
-    })
-  
+    else {
+      bcrypt.compare(password, result1.password, async (err, res) => {
+        if (err) {
+          console.log(err);
+          res.send(err)
+        }
+        else {
+          const check1 = await collection.deleteOne({
+            email: email,
+          });
 
+          console.log(check1);
 
+          if (check1) {
+            const htmlResponse = `
+      <html>
+        <head>
+          <title>Account Deleted</title>
+        </head>
+        <body style="text-align: center; padding: 20px;">
+          <h1>Account Deleted Successfully</h1>
+          <p>Your account has been permanently deleted.</p>
+          <button onclick="redirectToExample()">Go Back to Example URL</button>
+
+          <script>
+            function redirectToExample() {
+              // Replace 'http://example.com' with your actual example URL
+              window.location.href = 'http://example.com';
+            }
+          </script>
+        </body>
+      </html>
+    `;
+            resp.send(htmlResponse);
+          }
+        }
+      })
+    }
   } catch (err) {
     console.log("Error==>", err);
-    res.status(400).send({ msg: err, Status: 400, statusCode: 400 });
+    resp.status(400).send({ msg: err, Status: 400, statusCode: 400 });
   }
 });
+
 
 app.get('/api/image', (req, res) => {
   // Replace 'example.jpg' with the actual filename
   res.sendFile(path.join(__dirname, 'images', 'mozziylogo.png'));
 });
-
 
 app.listen(PORT, () => {
   console.log("SERVER RUNNING ON PORT ", PORT);
