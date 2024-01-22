@@ -1686,7 +1686,7 @@ app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
 
 
-app.get('/api/form', (req, res) => {
+app.get('/api/deleteAccountform', (req, res) => {
   // Render the HTML form using EJS
   try {
     console.log("this is running")
@@ -1720,7 +1720,7 @@ app.post('/submit', async (req, resp) => {
         <button onclick="redirectToExample()">Go Back to Account delete page</button>
         <script>
           function redirectToExample() {
-            window.location.href = '/api/form';
+            window.location.href = '/api/deleteAccountform';
           }
         </script>
       </body>
@@ -1762,7 +1762,7 @@ app.post('/submit', async (req, resp) => {
 
           <script>
             function redirectToExample() {
-              window.location.href = '/api/form';
+              window.location.href = '/api/deleteAccountform';
             }
           </script>
         </body>
