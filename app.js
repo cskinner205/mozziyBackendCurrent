@@ -1718,18 +1718,32 @@ app.post('/submit', async (req, resp) => {
       email: email,
     });
     if (!result1) {
-  resp.render('AccountNotDeleted.ejs')
+        resp.render('AccountNotDeleted.ejs')
     }
     else {
-      bcrypt.compare(password, result1.password, async (err, res) => {
+      // bcrypt.compare(password, result1.password, async (err, res) => {
+      //   if (err) {
+      //     console.log(err);
+      //     res.send(err)
+      //   }
+      //   else {
+      //       resp.render('AccountDeleteConfirmPage.ejs',{ data: email });
+      //   }
+      // })
+      bcrypt.compare(password, result1.password, async (err, match) => {
         if (err) {
           console.log(err);
-          res.send(err)
+          // res.send(err);
+        } else {
+          if (match) {
+            // Passwords match
+            resp.render('AccountDeleteConfirmPage.ejs', { data: email });
+          } else {
+            // Passwords do not match
+            resp.render('WrongCredentials.ejs');
+          }
         }
-        else {
-            resp.render('AccountDeleteConfirmPage.ejs',{ data: email });
-        }
-      })
+      });
     }
   } catch (err) {
     console.log("Error==>", err);
