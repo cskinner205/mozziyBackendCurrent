@@ -1714,30 +1714,10 @@ app.post('/submit', async (req, resp) => {
     // Select a collection
     const collection = db.collection("User");
     const eventCollection = db.collection("Event")
-    console.log("req", req.body)
     const result1 = await collection.findOne({
       email: email,
     });
     if (!result1) {
-  //     const htmlResponse = `
-  //   <html>
-  //     <head>
-  //       <title>Account Not Deleted</title>
-  //     </head>
-  //     <body style="text-align: center; padding: 20px;">
-  //       <h1>Email Does Not exist</h1>
-  //       <button onclick="redirectToExample()">Go Back to Account delete page</button>
-  //       <script>
-  //         function redirectToExample() {
-  //           window.location.href = '/api/deleteAccountform';
-  //         }
-  //       </script>
-  //     </body>
-  //   </html>
-  // `;
-  //     resp.send(htmlResponse);
-
-
   resp.render('AccountNotDeleted.ejs')
     }
     else {
@@ -1747,101 +1727,7 @@ app.post('/submit', async (req, resp) => {
           res.send(err)
         }
         else {
-  
-            const htmlResponse = `
-              <!DOCTYPE html>
-              <html lang="en">
-              <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Account Deletion Confirmation</title>
-                <script>
-                $(document).ready(function(){
-                function redirectToExample() {
-                  window.location.href = '/api/deleteAccountform';
-                }
-                let data = {
-                  ${email}
-                }
-                async function runCode(){
-                  const response = await fetch('/api/deleteAccountLogic', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/',
-                    },
-                    body: data
-                  });
-              
-                  // Check the response status or handle accordingly
-                  if (response.ok) {
-                    console.log('Data sent successfully');
-             
-                    window.location.href = '/api/AccountDeletedPage';
-                  } else {
-                    console.error('Failed to send data');
-                  }
-                }
-                window.runCode = runCode;
-                window.redirectToExample = redirectToExample;
-              })
-
-              </script>
-                <style>
-                  body {
-                    font-family: 'Arial', sans-serif;
-                    background-color: #f5f5f5;
-                    margin: 0;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                  }
-              
-                  .confirmation-container {
-                    background-color: #fff;
-                    padding: 20px;
-                    border-radius: 8px;
-                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                    max-width: 400px;
-                    width: 100%;
-                    text-align: center;
-                  }
-              
-                  h1 {
-                    color: #333;
-                    margin-bottom: 20px;
-                  }
-              
-                  button {
-                    background-color: #d9534f;
-                    color: #fff;
-                    padding: 10px 20px;
-                    border: none;
-                    border-radius: 4px;
-                    font-size: 16px;
-                    cursor: pointer;
-                    transition: background-color 0.3s ease;
-                  }
-              
-                  button:hover {
-                    background-color: #c9302c;
-                  }
-                </style>
-              </head>
-              <body>
-              
-              <div class="confirmation-container">
-                <h2>Are you sure you want to delete this account?</h2>
-                <button onclick="runCode()">Yes</button>
-                <button onclick="redirectToExample()">Go back</button>
-              </div>
-              
-              </body>
-              </html>
-    `;
-
-            resp.send(htmlResponse);
-          // }
+            resp.render('AccountDeleteConfirmPage.ejs',{ data: email });
         }
       })
     }
@@ -1851,9 +1737,31 @@ app.post('/submit', async (req, resp) => {
   }
 });
 
-app.post("/api/deleteAccountLogic",(req,res)=>{
-  console.log("deleteAccountLogic");
-  console.log(req.body);
+app.post("/api/deleteAccountLogic",async (req,res)=>{
+ 
+  try{
+  const {email } = req.body
+  await client.connect();
+  // Select a database
+  const db = client.db("mozziy_new");
+  // Select a collection
+  const userCollection  = db.collection("User");
+  const eventCollection = db.collection("Event");
+  const userEmailResult = await userCollection.findOne({email:email})
+  const userQueryResult = await userCollection.deleteOne({email:email})
+  console.log("userQueryResult",userQueryResult)
+  const filter = { userForeignKey: new ObjectId(userEmailResult._id) }  
+  const deletedEventsResult = await eventCollection.deleteMany(filter);
+  console.log(deletedEventsResult)
+  if(userQueryResult.acknowledged){
+    res.status(200).json({msg:"User Deleted SuccessFully", statusCode:200})
+  }else{
+    res.status(400).json({msg:"There is some error", statusCode:400})
+  }
+}
+  catch(err){console.log(err)
+    res.status(400).json({msg:"There is some error", statusCode:400})
+  }
 })
 
 app.get('/api/image', (req, res) => {

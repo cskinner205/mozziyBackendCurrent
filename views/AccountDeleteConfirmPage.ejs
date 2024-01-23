@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Deletion Confirmation</title>
+    <script>
+ 
+
+            let email = '<%= data %>' 
+            function redirectToExample() {
+                window.location.href = '/api/deleteAccountform';
+            }
+            let data = {
+                email: email
+            }
+            async function runCode() {
+                try{
+
+               
+                console.log("helloworld")
+                console.log("email",email)
+                const response = await fetch('/api/deleteAccountLogic', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                // Check the response status or handle accordingly
+                if (response.status ===200) {
+                    console.log('Data sent successfully');
+                    window.location.href = '/api/AccountDeletedPage';
+                } else {
+                    console.error('Failed to send data');
+                }
+            }catch(err){console.log("error",err)}
+
+            }
+            window.runCode = runCode;
+            window.redirectToExample = redirectToExample;
+       
+
+    </script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .confirmation-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #d9534f;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #c9302c;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="confirmation-container">
+        <h2>Are you sure you want to delete this account?</h2>
+        <button onclick="runCode()">Yes</button>
+        <button onclick="redirectToExample()">Go back</button>
+    </div>
+
+</body>
+
+</html>
