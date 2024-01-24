@@ -1728,7 +1728,7 @@ app.post('/submit', async (req, resp) => {
     }
     else if(result.signedByGoogle===true){
       console.log("Signed by google")
-      resp.render('GoogleSignInWeb.ejs')
+      resp.render('GoogleSignInWeb.ejs')  
     }
      else{
       console.log("Not Signed by google but normal sign in ")
