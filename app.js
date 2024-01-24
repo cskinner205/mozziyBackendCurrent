@@ -1827,7 +1827,7 @@ try{
    if(!userEmailResult){
     res.status(400).json({msg:"No user exists with this email", statusCode:400})
    }else if(userEmailResult.signedByGoogle === false )
-     res.status(400).json({msg:"User has not signed in by google. Please login with your credentials"})
+     res.status(400).json({msg:"User has not signed in by google. Please login with your credentials", success:"NotSignedByGoogle"})
    const userQueryResult = await userCollection.deleteOne({ email: email })
    console.log("userQueryResult", userQueryResult)
    const filter = { userForeignKey: new ObjectId(userEmailResult._id) }

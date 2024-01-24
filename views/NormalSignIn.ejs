@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Sign In</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #container {
+
+      text-align: center;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 550px;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    p {
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    .g_id_signin {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container">
+    <h1>Welcome to Mozziy!</h1>
+    <p>Looks like you have earlier used email and password as credentials to create an account on Mozziy. Please sign in using your email and password credentials.</p>
+    <button onclick="goBack()">Go Back</button>
+
+    <script>
+      function goBack() {
+        // You can customize the redirection URL as needed
+        window.location.href = '/api/deleteAccountform';
+      }
+    </script>
+  </div>
+
+</body>
+
+</html>
