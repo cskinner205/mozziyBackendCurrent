@@ -1,18 +1,19 @@
 
 
-    <html>
-    <body>
-        <script src="https://accounts.google.com/gsi/client" async defer></script>
-        <div id="g_id_onload"
-            data-client_id="783344080643-bl68bg05qh31u22kbf5f9oea4e3n0bp1.apps.googleusercontent.com"
-            data-callback="handleCredentialResponse">
-        </div>
-        <div class="g_id_signin" data-type="standard"></div>
-        <script>
-            function handleCredentialResponse(response) {
-              // Process the credential response here
-              console.log(response);
-            }
-          </script>
-    </body>
-    </html>
+<html>
+  <body>
+      <script src="https://accounts.google.com/gsi/client" async defer></script>
+      <div id="g_id_onload"
+          data-client_id="783344080643-bl68bg05qh31u22kbf5f9oea4e3n0bp1.apps.googleusercontent.com"
+          data-callback="handleCredentialResponse">
+      </div>
+      <div class="g_id_signin" data-type="standard"></div>
+      <script>
+          function handleCredentialResponse(response) {
+            // Process the credential response here
+            alert(response)
+            console.log(response);
+          }
+        </script>
+  </body>
+  </html>
