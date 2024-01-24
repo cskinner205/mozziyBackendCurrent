@@ -1801,6 +1801,11 @@ app.get('/api/googleSignIn', (req, res) => {
   res.render("GoogleSignInWeb.ejs")
 })
 
+app.get('/api/normalSignIn', (req, res) => {
+  console.log("google sign in web");
+  res.render("NormalSignIn.ejs")
+})
+
 app.post('/api/googlePayloadInfo', async(req, res) => {
 try{
   console.log(req.body)
@@ -1825,9 +1830,9 @@ try{
    const eventCollection = db.collection("Event");
    const userEmailResult = await userCollection.findOne({ email: email })
    if(!userEmailResult){
-    res.status(400).json({msg:"No user exists with this email", statusCode:400})
+    res.status(404).json({msg:"No user exists with this email", statusCode:400})
    }else if(userEmailResult.signedByGoogle === false )
-     res.status(400).json({msg:"User has not signed in by google. Please login with your credentials", success:"NotSignedByGoogle"})
+     res.status(400).json({  "message": "Invalid authentication method. Please use email and password.", "error": "InvalidRequest"})
    const userQueryResult = await userCollection.deleteOne({ email: email })
    console.log("userQueryResult", userQueryResult)
    const filter = { userForeignKey: new ObjectId(userEmailResult._id) }

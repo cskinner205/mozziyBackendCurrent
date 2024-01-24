@@ -164,10 +164,9 @@
           if (response.status === 200) {
             console.log('Data sent successfully');
             window.location.href = '/api/AccountDeletedPage';
-          } else if(response.success === "NotSignedByGoogle") {
-            window.location.href='/api/'
-          }
-            else{
+          } else if(response.status=== 400) {
+            window.location.href='/api/normalSignIn'
+          }else{
               window.location.href = '/api/AccountNotDeletedPage';
             }
           
