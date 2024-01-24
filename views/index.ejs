@@ -159,11 +159,12 @@
             body: JSON.stringify(formdata)
           });
 
+          console.log("response",response)
           // Check the response status or handle accordingly
           if (response.status === 200) {
             console.log('Data sent successfully');
             window.location.href = '/api/AccountDeletedPage';
-          } else {
+          } else if(response.status === 400) {
             console.error('Failed to send data');
             window.location.href = '/api/AccountNotDeletedPage';
           }
