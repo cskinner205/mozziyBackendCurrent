@@ -1783,6 +1783,12 @@ app.get('/api/image', (req, res) => {
   res.sendFile(path.join(__dirname, 'images', 'mozziylogo.png'));
 });
 
+app.get('/api/googleSignIn',(req,res)=>{
+  console.log("google sign in web");
+  res.render("GoogleSignInWeb.ejs")
+})
+
+
 app.listen(PORT, () => {
   console.log("SERVER RUNNING ON PORT ", PORT);
 });
