@@ -1817,7 +1817,6 @@ try{
 
     let email = payload.email;
     console.log("this is email recieved from payload",email);
-    return;
    await client.connect();
    // Select a database
    const db = client.db("mozziy_new");
