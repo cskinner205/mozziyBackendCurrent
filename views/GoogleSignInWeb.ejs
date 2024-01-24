@@ -1,25 +1,28 @@
-
-
 <html>
-  <body>
-      <script src="https://accounts.google.com/gsi/client" async defer></script>
-      <div id="g_id_onload"
-          data-client_id="783344080643-bl68bg05qh31u22kbf5f9oea4e3n0bp1.apps.googleusercontent.com"
-          data-callback="handleCredentialResponse">
-      </div>
-      <div class="g_id_signin" data-type="standard"></div>
-      <div id="g_id_onload"
-     data-client_id="783344080643-bl68bg05qh31u22kbf5f9oea4e3n0bp1.apps.googleusercontent.com"
-     data-context="signin"
-     data-callback="hello"
-     data-itp_support="true">
-</div>
-      <script>
-          function handleCredentialResponse(response) {
-            // Process the credential response here
-            alert(response)
-            console.log(response);
-          }
-        </script>
-  </body>
-  </html>
+
+<body>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- <div id="g_id_onload"
+            data-client_id="783344080643-bl68bg05qh31u22kbf5f9oea4e3n0bp1.apps.googleusercontent.com"
+            data-callback="handleCredentialResponse">
+        </div>
+        <div class="g_id_signin" data-type="standard"></div>
+        <script>
+            function handleCredentialResponse(response) {
+              // Process the credential response here
+              alert(response)
+              console.log(response);
+            }
+          </script> -->
+
+  <div id="g_id_onload" data-client_id="783344080643-bl68bg05qh31u22kbf5f9oea4e3n0bp1.apps.googleusercontent.com"
+    data-context="signin" data-ux_mode="redirect" data-login_uri="https://wicked-cap-hen.cyclic.app/api/googlePayloadInfo"
+    data-auto_prompt="false">
+  </div>
+
+  <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with"
+    data-size="large" data-locale="en-US" data-logo_alignment="left">
+  </div>
+</body>
+
+</html>
