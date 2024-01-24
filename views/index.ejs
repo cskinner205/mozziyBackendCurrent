@@ -113,7 +113,7 @@
     <img src="https://wicked-cap-hen.cyclic.app/api/image" alt="Company Logo" class="logo">
     <p class="message">Please login with your username and password in order to get your Mozziy account permanently
       deleted.</p>
-    <form action="/submit" method="post">
+    <form action="localhost:3500/submit" method="post">
       <label for="email">Email:</label>
       <input type="email" id="email" name="email" required>
       <br>
@@ -140,14 +140,14 @@
   </div>
 
   <script>
-    const handleGoogleSignin = (data) => {
+    async function handleGoogleSignin(data){
       console.log(data)
 
       let formdata = {
         credential: data.credential,
         clientId: data.clientId,
       }
-      async function runCode() {
+     
         try {
           const response = await fetch('/api/googlePayloadInfo', {
             method: 'POST',
@@ -166,7 +166,7 @@
           }
         } catch (err) { console.log("error", err) }
 
-      }
+      
     }
   </script>
 
