@@ -1758,7 +1758,7 @@ app.post('/submit', async (req, resp) => {
     }
   } catch (err) {
     console.log("Error==>", err);
-    resp.status(400).send({ msg: err, Status: 400, statusCode: 400 });
+    resp.status(400).send({ msg: err,statusCode: 400 });
   }
 });
 
