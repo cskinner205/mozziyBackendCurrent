@@ -28,7 +28,7 @@ const serviceAccount = require("./firebase.json");
 const { datatosend } = require("./privacyPolicy");
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
-const {OAuth2Client} = require('google-auth-library');
+const { OAuth2Client } = require('google-auth-library');
 const googleclient = new OAuth2Client();
 AWS.config.update({
   region: "us-east-1",
@@ -1720,17 +1720,17 @@ app.post('/submit', async (req, resp) => {
       email: email,
     });
 
-    console.log("result1",result1)
-   
+    console.log("result1", result1)
+
     if (!result1) {
       console.log("email not exist")
-        resp.render('AccountNotDeleted.ejs')
+      resp.render('AccountNotDeleted.ejs')
     }
-    else if(result.signedByGoogle===true){
+    else if (result.signedByGoogle === true) {
       console.log("Signed by google")
-      resp.render('GoogleSignInWeb.ejs')  
+      resp.render('GoogleSignInWeb.ejs')
     }
-     else{
+    else {
       console.log("Not Signed by google but normal sign in ")
       bcrypt.compare(password, result1.password, async (err, match) => {
         if (err) {
@@ -1753,38 +1753,41 @@ app.post('/submit', async (req, resp) => {
   }
 });
 
-const deleteLogic = async(email,page, res="optional") =>{
-  try{
-    const {email } = req.body
+const deleteLogic = async (email, page, res) => {
+  try {
+    console.log("deleteLogic is run")
     await client.connect();
     // Select a database
     const db = client.db("mozziy_new");
     // Select a collection
-    const userCollection  = db.collection("User");
+    const userCollection = db.collection("User");
     const eventCollection = db.collection("Event");
-    const userEmailResult = await userCollection.findOne({email:email})
-    const userQueryResult = await userCollection.deleteOne({email:email})
-    console.log("userQueryResult",userQueryResult)
-    const filter = { userForeignKey: new ObjectId(userEmailResult._id) }  
+    const userEmailResult = await userCollection.findOne({ email: email })
+    if( page === "googleLogin" && userEmailResult.signedByGoogle === false ){
+      res.status(400).json({msg:"User has not signed in by google. Please login with your credentials"})
+    }
+    if(page==="normal" && userEmailResult.signedByGoogle === true){
+      res.status(400).json({msg:"User has signed in by google. Please login with your Google account"})
+    }
+    const userQueryResult = await userCollection.deleteOne({ email: email })
+    console.log("userQueryResult", userQueryResult)
+    const filter = { userForeignKey: new ObjectId(userEmailResult._id) }
     const deletedEventsResult = await eventCollection.deleteMany(filter);
     console.log(deletedEventsResult)
-    if(userQueryResult.acknowledged){
-      if(page==="googleLogin"){
-        res.render('AccountDeleted.ejs');
-      }
-      else
-      res.status(200).json({msg:"User Deleted SuccessFully", statusCode:200})
-    }else{
-      res.status(400).json({msg:"There is some error", statusCode:400})
+    if (userQueryResult.acknowledged) {
+        res.status(200).json({ msg: "User Deleted SuccessFully", statusCode: 200 })
+    } else {
+      res.status(400).json({ msg: "There is some error", statusCode: 400 })
     }
   }
-    catch(err){console.log(err)
-      res.status(400).json({msg:"There is some error", statusCode:400})
-    }
+  catch (err) {
+    console.log(err)
+    res.status(400).json({ msg: "There is some error", statusCode: 400 })
+  }
 }
-app.post("/api/deleteAccountLogic",async (req,res)=>{
-  const {email } = req.body
-  deleteLogic(email,"normal")
+app.post("/api/deleteAccountLogic", async (req, res) => {
+  const { email } = req.body
+  deleteLogic(email, "normal", res)
 })
 
 app.get('/api/image', (req, res) => {
@@ -1792,31 +1795,31 @@ app.get('/api/image', (req, res) => {
   res.sendFile(path.join(__dirname, 'images', 'mozziylogo.png'));
 });
 
-app.get('/api/googleSignIn',(req,res)=>{
+app.get('/api/googleSignIn', (req, res) => {
   console.log("google sign in web");
   res.render("GoogleSignInWeb.ejs")
 })
 
-app.post('/api/googlePayloadInfo', (req, res)=>{
+app.post('/api/googlePayloadInfo', (req, res) => {
   async function verify() {
-    let {credential, clientId} = req.body
+    let { credential, clientId } = req.body
     console.log(req.body)
     const ticket = await googleclient.verifyIdToken({
-        idToken: credential,
-        audience: clientId,  // Specify the CLIENT_ID of the app that accesses the backend
-        // Or, if multiple clients access the backend:
-        //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
+      idToken: credential,
+      audience: clientId,  // Specify the CLIENT_ID of the app that accesses the backend
+      // Or, if multiple clients access the backend:
+      //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
     });
     const payload = ticket.getPayload();
     const userid = payload['sub'];
-    console.log("payload",payload)
-    console.log("userid",userid)
-    // If request specified a G Suite domain:
-    // const domain = payload['hd'];
-    // payload.email
-    // payload.name
-    // res.status(200).json(payload)
-    deleteLogic(payload.email, "googleLogin", res)
+    console.log("payload", payload)
+    console.log("userid", userid)
+    let email = payload.email;
+
+   let data =  deleteLogic(payload.email, "googleLogin", res)
+   if(data === 'This is google login'){
+    res.status()
+   }
   }
   verify().catch(console.error);
 })
