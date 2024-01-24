@@ -1719,10 +1719,15 @@ app.post('/submit', async (req, resp) => {
     const result1 = await collection.findOne({
       email: email,
     });
+
+   
     if (!result1) {
         resp.render('AccountNotDeleted.ejs')
     }
-    else {
+    else if(result.signedByGoogle===true){
+      resp.render('GoogleSignInWeb.ejs')
+    }
+     else{
       // bcrypt.compare(password, result1.password, async (err, res) => {
       //   if (err) {
       //     console.log(err);
@@ -1753,31 +1758,38 @@ app.post('/submit', async (req, resp) => {
   }
 });
 
-app.post("/api/deleteAccountLogic",async (req,res)=>{
- 
+const deleteLogic = async(email,page, res="optional") =>{
   try{
-  const {email } = req.body
-  await client.connect();
-  // Select a database
-  const db = client.db("mozziy_new");
-  // Select a collection
-  const userCollection  = db.collection("User");
-  const eventCollection = db.collection("Event");
-  const userEmailResult = await userCollection.findOne({email:email})
-  const userQueryResult = await userCollection.deleteOne({email:email})
-  console.log("userQueryResult",userQueryResult)
-  const filter = { userForeignKey: new ObjectId(userEmailResult._id) }  
-  const deletedEventsResult = await eventCollection.deleteMany(filter);
-  console.log(deletedEventsResult)
-  if(userQueryResult.acknowledged){
-    res.status(200).json({msg:"User Deleted SuccessFully", statusCode:200})
-  }else{
-    res.status(400).json({msg:"There is some error", statusCode:400})
+    const {email } = req.body
+    await client.connect();
+    // Select a database
+    const db = client.db("mozziy_new");
+    // Select a collection
+    const userCollection  = db.collection("User");
+    const eventCollection = db.collection("Event");
+    const userEmailResult = await userCollection.findOne({email:email})
+    const userQueryResult = await userCollection.deleteOne({email:email})
+    console.log("userQueryResult",userQueryResult)
+    const filter = { userForeignKey: new ObjectId(userEmailResult._id) }  
+    const deletedEventsResult = await eventCollection.deleteMany(filter);
+    console.log(deletedEventsResult)
+    if(userQueryResult.acknowledged){
+      if(page==="googleLogin"){
+        res.render('AccountDeleted.ejs');
+      }
+      else
+      res.status(200).json({msg:"User Deleted SuccessFully", statusCode:200})
+    }else{
+      res.status(400).json({msg:"There is some error", statusCode:400})
+    }
   }
+    catch(err){console.log(err)
+      res.status(400).json({msg:"There is some error", statusCode:400})
+    }
 }
-  catch(err){console.log(err)
-    res.status(400).json({msg:"There is some error", statusCode:400})
-  }
+app.post("/api/deleteAccountLogic",async (req,res)=>{
+  const {email } = req.body
+  deleteLogic(email,"normal")
 })
 
 app.get('/api/image', (req, res) => {
@@ -1806,6 +1818,10 @@ app.post('/api/googlePayloadInfo', (req, res)=>{
     console.log("userid",userid)
     // If request specified a G Suite domain:
     // const domain = payload['hd'];
+    // payload.email
+    // payload.name
+    // res.status(200).json(payload)
+    deleteLogic(payload.email, "googleLogin", res)
   }
   verify().catch(console.error);
 })
