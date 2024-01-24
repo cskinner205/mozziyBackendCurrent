@@ -1800,30 +1800,28 @@ app.get('/api/googleSignIn', (req, res) => {
   res.render("GoogleSignInWeb.ejs")
 })
 
-app.post('/api/googlePayloadInfo', (req, res) => {
-  async function verify() {
-    console.log(req.body)
-    let { credential, clientId } = req.body.data
-    console.log(req.body)
-    const ticket = await googleclient.verifyIdToken({
-      idToken: credential,
-      audience: clientId,  // Specify the CLIENT_ID of the app that accesses the backend
-      // Or, if multiple clients access the backend:
-      //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
-    });
-    const payload = ticket.getPayload();
-    const userid = payload['sub'];
-    console.log("payload", payload)
-    console.log("userid", userid)
-    let email = payload.email;
-
-   let data =  deleteLogic(payload.email, "googleLogin", res)
-   if(data === 'This is google login'){
-    res.status()
-   }
-  }
-  verify().catch(console.error);
-})
+app.post('/api/googlePayloadInfo', async(req, res) => {
+  try{
+      let { credential, clientId } = req.body.data
+      console.log(req.body)
+      const ticket = await googleclient.verifyIdToken({
+        idToken: credential,
+        audience: clientId,  // Specify the CLIENT_ID of the app that accesses the backend
+        // Or, if multiple clients access the backend:
+        //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
+      });
+      const payload = ticket.getPayload();
+      const userid = payload['sub'];
+      console.log("payload", payload)
+      console.log("userid", userid)
+      let email = payload.email;
+  
+     let data =  deleteLogic(payload.email, "googleLogin", res)
+     if(data === 'This is google login'){
+      res.status()
+     }
+  }catch(err){console.log(err)}
+  })
 
 app.listen(PORT, () => {
   console.log("SERVER RUNNING ON PORT ", PORT);
