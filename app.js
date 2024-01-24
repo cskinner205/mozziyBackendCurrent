@@ -28,6 +28,8 @@ const serviceAccount = require("./firebase.json");
 const { datatosend } = require("./privacyPolicy");
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
+const {OAuth2Client} = require('google-auth-library');
+const googleclient = new OAuth2Client();
 AWS.config.update({
   region: "us-east-1",
   accessKeyId: AWS_ACCESS_KEY,
@@ -1806,7 +1808,6 @@ app.post('/api/googlePayloadInfo', (req, res)=>{
   }
   verify().catch(console.error);
 })
-
 
 app.listen(PORT, () => {
   console.log("SERVER RUNNING ON PORT ", PORT);
