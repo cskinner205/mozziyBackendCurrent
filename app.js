@@ -1825,7 +1825,7 @@ try{
    const eventCollection = db.collection("Event");
    const userEmailResult = await userCollection.findOne({ email: email })
    if(!userEmailResult){
-    res.status(400).json({msg:"No user exists with this email"})
+    res.status(400).json({msg:"No user exists with this email", statusCode:400})
    }else if(userEmailResult.signedByGoogle === false )
      res.status(400).json({msg:"User has not signed in by google. Please login with your credentials"})
    const userQueryResult = await userCollection.deleteOne({ email: email })
