@@ -165,6 +165,7 @@
             window.location.href = '/api/AccountDeletedPage';
           } else {
             console.error('Failed to send data');
+            window.location.href = '/api/AccountNotDeletedPage';
           }
         } catch (err) { console.log("error", err) }
 

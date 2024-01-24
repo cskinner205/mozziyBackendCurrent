@@ -1706,6 +1706,15 @@ app.get('/api/AccountDeletedPage', (req, res) => {
 });
 
 
+app.get('/api/AccountNotDeletedPage', (req, res) => {
+  // Render the HTML form using EJS
+  try {
+    console.log("this is running")
+    res.render('AccountNotDeleted.ejs');
+  } catch (err) { console.log("error of form", err) }
+});
+
+
 app.post('/submit', async (req, resp) => {
   console.log("submit is hit")
   const { email, password } = req.body;
@@ -1807,7 +1816,8 @@ try{
     const userid = payload['sub'];
 
     let email = payload.email;
-
+    console.log("this is email recieved from payload",email);
+    return;
    await client.connect();
    // Select a database
    const db = client.db("mozziy_new");
@@ -1815,6 +1825,9 @@ try{
    const userCollection = db.collection("User");
    const eventCollection = db.collection("Event");
    const userEmailResult = await userCollection.findOne({ email: email })
+   if(!userEmailResult){
+    res.status(400).json({msg:"No user exists with this email"})
+   }
    if(userEmailResult.signedByGoogle === false )
      res.status(400).json({msg:"User has not signed in by google. Please login with your credentials"})
    const userQueryResult = await userCollection.deleteOne({ email: email })
