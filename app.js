@@ -1794,7 +1794,7 @@ app.get('/api/googleSignIn', (req, res) => {
 
 app.post('/api/googlePayloadInfo', async(req, res) => {
 try{
-    let { credential, clientId } = req.body.data
+    let { credential, clientId } = req.body.formdata
     console.log(req.body)
     console.log("googlePayload is run")
     const ticket = await googleclient.verifyIdToken({
