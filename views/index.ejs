@@ -165,7 +165,6 @@
             console.log('Data sent successfully');
             window.location.href = '/api/AccountDeletedPage';
           } else if(response.statusCode === 400) {
-            console.log('Failed to send data');
             window.location.href = '/api/AccountNotDeletedPage';
           }
         } catch (err) { console.log("error", err) }
