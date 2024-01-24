@@ -1782,7 +1782,7 @@ const deleteLogic = async (email, page, res) => {
   }
   catch (err) {
     console.log(err)
-    res.status(400).json({ msg: "There is some error", statusCode: 400 })
+    res.status(400).json({ msg: err, statusCode: 400 })
   }
 }
 app.post("/api/deleteAccountLogic", async (req, res) => {
