@@ -1792,11 +1792,11 @@ app.get('/api/googleSignIn',(req,res)=>{
 
 app.post('/api/googlePayloadInfo', (req, res)=>{
   async function verify() {
-    let {token, CLIENT_ID} = req.body
+    let {credential, clientId} = req.body
     console.log(req.body)
     const ticket = await googleclient.verifyIdToken({
-        idToken: token,
-        audience: CLIENT_ID,  // Specify the CLIENT_ID of the app that accesses the backend
+        idToken: credential,
+        audience: clientId,  // Specify the CLIENT_ID of the app that accesses the backend
         // Or, if multiple clients access the backend:
         //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
     });
