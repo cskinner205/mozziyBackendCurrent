@@ -17,17 +17,17 @@
     }
 
     #container {
- 
+
       text-align: center;
       padding: 20px;
       background-color: #fff;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       width: 550px;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    align-items: center;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
     }
 
     h1 {
@@ -48,19 +48,52 @@
 <body>
   <div id="container">
     <h1>Welcome to Mozziy!</h1>
-    <p>Looks like you have earlier used Google Sign In to create an account on Mozziy. Please sign in using Google Sign In to continue deleting your account.</p>
+    <p>Looks like you have earlier used Google Sign In to create an account on Mozziy. Please sign in using Google Sign
+      In to continue deleting your account.</p>
 
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <div id="g_id_onload" data-client_id="783344080643-bl68bg05qh31u22kbf5f9oea4e3n0bp1.apps.googleusercontent.com"
-      data-context="signin" data-ux_mode="redirect" data-login_uri="https://wicked-cap-hen.cyclic.app/api/googlePayloadInfo"
-      data-auto_prompt="false">
+      data-context="signin" data-ux_mode="popup" data-callback="handleGoogleSignin" data-auto_prompt="false">
     </div>
 
-    <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="Sign in with"
-      data-size="large" data-locale="en-US" data-logo_alignment="left">
+    <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with"
+      data-size="large" data-logo_alignment="left">
     </div>
   </div>
+  <script>
+    async function handleGoogleSignin(data) {
+      console.log("data", data)
+
+      let formdata = {
+        credential: data.credential,
+        clientId: data.clientId,
+      }
+
+      try {
+        const response = await fetch('/api/googlePayloadInfo', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formdata)
+        });
+
+        console.log("response", response)
+        // Check the response status or handle accordingly
+        if (response.status === 200) {
+          console.log('Data sent successfully');
+          window.location.href = '/api/AccountDeletedPage';
+        } else if (response.status === 400) {
+          window.location.href = '/api/AccountNotDeletedPage';
+        }
+      } catch (err) { console.log("error", err) }
+
+
+    }
+  </script>
+
+
 </body>
 
 </html>

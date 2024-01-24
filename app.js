@@ -1730,12 +1730,12 @@ app.post('/submit', async (req, resp) => {
     });
 
     console.log("result1", result1)
-
+    // return;
     if (!result1) {
       console.log("email not exist")
       resp.render('AccountNotDeleted.ejs')
     }
-    else if (result.signedByGoogle === true) {
+    else if (result1.signedByGoogle === true) {
       console.log("Signed by google")
       resp.render('GoogleSignInWeb.ejs')
     }
@@ -1758,7 +1758,7 @@ app.post('/submit', async (req, resp) => {
     }
   } catch (err) {
     console.log("Error==>", err);
-    resp.status(400).send({ msg: err,statusCode: 400 });
+    resp.status(400).send({ msg: err, Status: 400, statusCode: 400 });
   }
 });
 
