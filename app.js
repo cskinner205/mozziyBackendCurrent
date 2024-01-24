@@ -1831,8 +1831,11 @@ try{
    const userEmailResult = await userCollection.findOne({ email: email })
    if(!userEmailResult){
     res.status(404).json({msg:"No user exists with this email", statusCode:400})
-   }else if(userEmailResult.signedByGoogle === false )
+    return;
+   }else if(userEmailResult.signedByGoogle === false ){
      res.status(400).json({  "message": "Invalid authentication method. Please use email and password.", "error": "InvalidRequest"})
+     return;
+    }
    const userQueryResult = await userCollection.deleteOne({ email: email })
    console.log("userQueryResult", userQueryResult)
    const filter = { userForeignKey: new ObjectId(userEmailResult._id) }
