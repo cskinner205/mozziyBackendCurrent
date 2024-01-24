@@ -1753,7 +1753,8 @@ app.post('/submit', async (req, resp) => {
   }
 });
 
-const deleteLogic = async (email, page, res) => {
+app.post("/api/deleteAccountLogic", async (req, res) => {
+  const { email } = req.body
   try {
     console.log("deleteLogic is run")
     await client.connect();
@@ -1763,12 +1764,6 @@ const deleteLogic = async (email, page, res) => {
     const userCollection = db.collection("User");
     const eventCollection = db.collection("Event");
     const userEmailResult = await userCollection.findOne({ email: email })
-    if( page === "googleLogin" && userEmailResult.signedByGoogle === false ){
-      res.status(400).json({msg:"User has not signed in by google. Please login with your credentials"})
-    }
-    if(page==="normal" && userEmailResult.signedByGoogle === true){
-      res.status(400).json({msg:"User has signed in by google. Please login with your Google account"})
-    }
     const userQueryResult = await userCollection.deleteOne({ email: email })
     console.log("userQueryResult", userQueryResult)
     const filter = { userForeignKey: new ObjectId(userEmailResult._id) }
@@ -1784,10 +1779,7 @@ const deleteLogic = async (email, page, res) => {
     console.log(err)
     res.status(400).json({ msg: err, statusCode: 400 })
   }
-}
-app.post("/api/deleteAccountLogic", async (req, res) => {
-  const { email } = req.body
-  deleteLogic(email, "normal", res)
+  
 })
 
 app.get('/api/image', (req, res) => {
@@ -1801,27 +1793,42 @@ app.get('/api/googleSignIn', (req, res) => {
 })
 
 app.post('/api/googlePayloadInfo', async(req, res) => {
-  try{
-      let { credential, clientId } = req.body.data
-      console.log(req.body)
-      const ticket = await googleclient.verifyIdToken({
-        idToken: credential,
-        audience: clientId,  // Specify the CLIENT_ID of the app that accesses the backend
-        // Or, if multiple clients access the backend:
-        //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
-      });
-      const payload = ticket.getPayload();
-      const userid = payload['sub'];
-      console.log("payload", payload)
-      console.log("userid", userid)
-      let email = payload.email;
-  
-     let data =  deleteLogic(payload.email, "googleLogin", res)
-     if(data === 'This is google login'){
-      res.status()
-     }
-  }catch(err){console.log(err)}
-  })
+try{
+    let { credential, clientId } = req.body.data
+    console.log(req.body)
+    console.log("googlePayload is run")
+    const ticket = await googleclient.verifyIdToken({
+      idToken: credential,
+      audience: clientId,  // Specify the CLIENT_ID of the app that accesses the backend
+      // Or, if multiple clients access the backend:
+      //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
+    });
+    const payload = ticket.getPayload();
+    const userid = payload['sub'];
+
+    let email = payload.email;
+
+   await client.connect();
+   // Select a database
+   const db = client.db("mozziy_new");
+   // Select a collection
+   const userCollection = db.collection("User");
+   const eventCollection = db.collection("Event");
+   const userEmailResult = await userCollection.findOne({ email: email })
+   if(userEmailResult.signedByGoogle === false )
+     res.status(400).json({msg:"User has not signed in by google. Please login with your credentials"})
+   const userQueryResult = await userCollection.deleteOne({ email: email })
+   console.log("userQueryResult", userQueryResult)
+   const filter = { userForeignKey: new ObjectId(userEmailResult._id) }
+   const deletedEventsResult = await eventCollection.deleteMany(filter);
+   console.log(deletedEventsResult)
+   if (userQueryResult.acknowledged) {
+       res.status(200).json({ msg: "User Deleted SuccessFully", statusCode: 200 })
+   } else {
+     res.status(400).json({ msg: "There is some error", statusCode: 400 })
+   }
+}catch(err){console.log(err)}
+})
 
 app.listen(PORT, () => {
   console.log("SERVER RUNNING ON PORT ", PORT);
