@@ -1788,6 +1788,25 @@ app.get('/api/googleSignIn',(req,res)=>{
   res.render("GoogleSignInWeb.ejs")
 })
 
+app.post('/api/googlePayloadInfo', (req, res)=>{
+  async function verify() {
+    let {token, CLIENT_ID} = req.body
+    const ticket = await googleclient.verifyIdToken({
+        idToken: token,
+        audience: CLIENT_ID,  // Specify the CLIENT_ID of the app that accesses the backend
+        // Or, if multiple clients access the backend:
+        //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
+    });
+    const payload = ticket.getPayload();
+    const userid = payload['sub'];
+    console.log("payload",payload)
+    console.log("userid",userid)
+    // If request specified a G Suite domain:
+    // const domain = payload['hd'];
+  }
+  verify().catch(console.error);
+})
+
 
 app.listen(PORT, () => {
   console.log("SERVER RUNNING ON PORT ", PORT);
