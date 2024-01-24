@@ -1720,23 +1720,18 @@ app.post('/submit', async (req, resp) => {
       email: email,
     });
 
+    console.log("result1",result1)
    
     if (!result1) {
+      console.log("email not exist")
         resp.render('AccountNotDeleted.ejs')
     }
     else if(result.signedByGoogle===true){
+      console.log("Signed by google")
       resp.render('GoogleSignInWeb.ejs')
     }
      else{
-      // bcrypt.compare(password, result1.password, async (err, res) => {
-      //   if (err) {
-      //     console.log(err);
-      //     res.send(err)
-      //   }
-      //   else {
-      //       resp.render('AccountDeleteConfirmPage.ejs',{ data: email });
-      //   }
-      // })
+      console.log("Not Signed by google but normal sign in ")
       bcrypt.compare(password, result1.password, async (err, match) => {
         if (err) {
           console.log(err);
