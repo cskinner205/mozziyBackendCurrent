@@ -1028,12 +1028,16 @@ app.post("/api/getAllFavoriteEvents", async (req, res) => {
           from: "Event",
           localField: "event_id",
           foreignField: "_id",
-          as: "additionalInfo2",
+          as: "favouriteEvents",
         },
       },
       {
-        $unwind: "$additionalInfo2",
-      },
+        $unwind: "$favouriteEvents",
+      },{
+        $project:{
+          favouriteEvents:1
+        }
+      }
     ];
 
     // const result = await collection.find({ user_id: new ObjectId(req.body.userId)}).toArray();
