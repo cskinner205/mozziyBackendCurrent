@@ -31,7 +31,7 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 const { OAuth2Client } = require('google-auth-library');
 const googleclient = new OAuth2Client();
 AWS.config.update({
-  region: "us-east-1",
+  region: 'us-east-1',
   accessKeyId: AWS_ACCESS_KEY,
   secretAccessKey: AWS_SECRET_ACCESS_KEY,
 });
