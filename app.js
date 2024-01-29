@@ -806,6 +806,7 @@ app.post("/api/getFeedEvents", async (req, res) => {
     const favoriteEvents = await favouriteCollections
       .find({ user_id: new ObjectId(req.body.userId) })
       .toArray();
+      console.log(favoriteEvents)
     const favouriteEventsIds = favoriteEvents.map((fav) => fav.event_id);
     const userResult = await userCollection.findOne({
       _id: new ObjectId(req.body.userId),
@@ -1029,32 +1030,32 @@ app.post("/api/getAllFavoriteEvents", async (req, res) => {
 
 app.post("/addEventToFavorite", async (req, res) => {
   try {
-    // console.log("add event to favorite api is run")
-    // console.log("req.body",req.body)
-
+    console.log("this is run")
+    console.log(req.body)
     const { id, heart, loggedInUserId } = req.body;
-    // console.log(id,"eventId")
-    // console.log(typeof id,"typeof id")
-    // console.log("value of heart is ",heart)
-    // console.log(loggedInUserId,"userId")
-    // console.log(typeof loggedInUserId,"typeof loggedInUserId")
     await client.connect();
-
     const db = client.db("mozziy_new");
-
     const collection = db.collection("Favorites");
-
     if (heart) {
-      const result = await collection.insertOne({
+      let duplicate = await collection.findOne({
         user_id: new ObjectId(loggedInUserId),
         event_id: new ObjectId(id),
-        time: new Date().toISOString(),
-      });
-
-      // console.log(result,"result")
-      if (result.insertedId) {
-        res.status(200).send({ msg: "Event added to favorites", status: 200 });
+      })
+      if(duplicate){
+        res.status(200).send({ msg: "Event already in favorites", status: 200 });
+      }else{
+        const result = await collection.insertOne({
+          user_id: new ObjectId(loggedInUserId),
+          event_id: new ObjectId(id),
+          time: new Date().toISOString(),
+        });
+        // console.log(result,"result")
+        if (result.insertedId) {
+          res.status(200).send({ msg: "Event added to favorites", status: 200 });
+        }
       }
+        
+      
     } else {
       const result = await collection.deleteOne({
         user_id: new ObjectId(loggedInUserId),
