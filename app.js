@@ -109,9 +109,9 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
       const data = await Promise.all(
         result.map(async (value) => {
           if (value?.fileData) {
-            let path = value.fileData.path
-              ? value.fileData.path
-              : value.fileData.Location;
+            let path = value.fileData.key
+              // ? value.fileData.path
+              // : value.fileData.Location;
             try {
               const targetImage = {
                 S3Object: {
@@ -826,14 +826,14 @@ app.post("/api/getFeedEvents", async (req, res) => {
           allEvents: [],
         });
     }
-    let imagePath = userResult.profile_Image.path
-      ? userResult.profile_Image.path
-      : userResult.profile_Image.Location;
+    let imagePath = userResult.profile_Image.key
+      // ? userResult.profile_Image.path
+      // : userResult.profile_Image.Location;
     console.log("we are here");
     const sourceImage = {
       S3Object: {
-        Bucket: "find-my-face-2",
-        Name: imagePath,
+        Bucket:"find-my-face-2",
+        Name:imagePath,
       },
     };
     console.log("we are here22");
@@ -847,9 +847,9 @@ app.post("/api/getFeedEvents", async (req, res) => {
         eventResult.map(async (value) => {
           console.log("we are here44444");
           if (value?.fileData) {
-            let path = value.fileData.path
-              ? value.fileData.path
-              : value.fileData.Location;
+            let path = value.fileData.key
+              // ? value.fileData.path
+              // : value.fileData.Location;
             console.log("this is the path",path)
             const targetImage = {
               S3Object: {
@@ -859,8 +859,8 @@ app.post("/api/getFeedEvents", async (req, res) => {
             };
 
             console.log("we are here555555");
-            const params2 = {
-              Image: targetImage,
+            const params2={
+              Image:targetImage,
             };
             console.log("we are here66666");
 
