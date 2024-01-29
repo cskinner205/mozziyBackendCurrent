@@ -39,9 +39,7 @@ AWS.config.update({
 const BUCKET_NAME = "find-my-face-2";
 
 const rekognition = new AWS.Rekognition();
-const s3 = new AWS.S3({
-  signatureVersion: 'v4',
-});
+const s3 = new AWS.S3();
 
 app.use(express.json());
 
