@@ -1057,7 +1057,7 @@ app.post("/addEventToFavorite", async (req, res) => {
     await client.connect();
     const db = client.db("mozziy_new");
     const collection = db.collection("Favorites");
-    if (heart) {
+    if (heart===true) {
       let duplicate = await collection.findOne({
         user_id: new ObjectId(loggedInUserId),
         event_id: new ObjectId(id),
