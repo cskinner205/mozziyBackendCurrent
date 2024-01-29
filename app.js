@@ -852,6 +852,7 @@ app.post("/api/getFeedEvents", async (req, res) => {
             let path = value.fileData.path
               ? value.fileData.path
               : value.fileData.Location;
+            console.log("this is the path",path)
             const targetImage = {
               S3Object: {
                 Bucket: "find-my-face-2",
