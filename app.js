@@ -807,7 +807,7 @@ app.post("/api/getFeedEvents", async (req, res) => {
       .find({ user_id: new ObjectId(req.body.userId) })
       .toArray();
       console.log(favoriteEvents)
-    const favouriteEventsIds = favoriteEvents.map((fav) => fav.event_id);
+    const favouriteEventsIds = favoriteEvents.map((fav) => fav.event_id.toString());
     const userResult = await userCollection.findOne({
       _id: new ObjectId(req.body.userId),
     });
@@ -887,6 +887,10 @@ app.post("/api/getFeedEvents", async (req, res) => {
                     FaceMatches.map((match) => {
                       const similarity = match.Similarity;
                       // console.log('similarity:', similarity)
+                      // if(favouriteEventsIds.)
+                      if(favouriteEventsIds.includes(value._id.toString())){
+                        value.isFavorite = true
+                        }
                       finalResult.push(value);
                       // console.log(finalResult, "finalResult000000")
                     })
@@ -911,12 +915,29 @@ app.post("/api/getFeedEvents", async (req, res) => {
         console.log("*********************DASHBOARD PAGE DATA****************");
         console.log("tgis is the data", finalResult);
         if (finalResult.length > 0) {
-          res.status(200).json({
-            allEvents: finalResult,
-            favouriteEventsIds: favouriteEventsIds,
-            status: true,
-            statusCode: 200,
-          });
+
+          // const promises = finalResult.map(finRes=>{
+          //   console.log("favouriteEventsIds",favouriteEventsIds)
+          //   return new Promise((res,rej)=>{
+          //     console.log("finRes._id",finRes._id)
+          //    if(favouriteEventsIds.includes(finRes._id.toString())){
+          //     console.log("Something happens")
+          //     finRes.isFavorite = true
+          //     }else{
+          //       console.log("bingo")
+          //     }
+          //     res();
+          //   })
+          // })
+
+          // Promise.all(promises).then(()=>{
+            res.status(200).json({
+              allEvents: finalResult,
+              favouriteEventsIds: favouriteEventsIds,
+              status: true,
+              statusCode: 200,
+            });
+          // })
         } else {
           res.status(200).json({
             allEvents: finalResult,
@@ -932,7 +953,7 @@ app.post("/api/getFeedEvents", async (req, res) => {
       // }
     } catch (err) {
       // console.log("finalResult",finalResult)
-      console.log("Error=>", err.Message);
+      console.log("Error=>", err);
     }
   } catch (err) {
     console.log("Error=>>>>", err);
