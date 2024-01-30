@@ -319,15 +319,17 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
   const collection = db.collection("User");
 
   let connectId = await collection.findOne({ _id: req.body.userId })
-  if (connectId.hasOwnProperty('connectAccountId')) {
-    return res
-      .status(200)
-      .send({
-        msg: "Stripe account exists",
-        Status: "Success",
-        statusCode: 200,
-      });
-  }
+
+  if (!connectId.hasOwnProperty('connectAccountId')) {
+    console.log("this is run what i wanted")
+  return  res
+  .status(400)
+  .send({
+    msg: "Stripe account does not exist",
+    Status: "Failed",
+    statusCode: 400,
+  });
+}
 
 
 
