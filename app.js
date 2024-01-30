@@ -1123,7 +1123,7 @@ app.post("/savePurchase", async (req, res) => {
       _id: new ObjectId(req.body.owner),
     });
 
-    if (res.hasOwnProperty(connectAccountId)) {
+    if (res.hasOwnProperty('connectAccountId')) {
       const connectId = res.connectAccountId;
       console.log("connectId", connectId);
       console.log(
