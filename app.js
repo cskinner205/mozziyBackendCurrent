@@ -1143,7 +1143,8 @@ app.post("/savePurchase", async (req, res) => {
     const res = await collection2.findOne({
       _id: new ObjectId(req.body.owner),
     });
-
+    console.log(res,"res");
+    if(res){
     if (res.hasOwnProperty('connectAccountId')) {
       const connectId = res.connectAccountId;
       console.log("connectId", connectId);
@@ -1174,7 +1175,7 @@ app.post("/savePurchase", async (req, res) => {
       res
         .status(400)
         .send({ msg: "No connect account exists for user who has uploaded this event", statusCode: 400 });
-    }
+    }}
   } catch (err) {
     console.log("Errrrrrrr", err);
     res.status(400).send({ msg: err.message, statusCode: 400 });
