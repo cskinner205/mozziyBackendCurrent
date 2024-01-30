@@ -1133,46 +1133,44 @@ app.post("/addEventToFavorite", async (req, res) => {
   }
 });
 
-app.post("/savePurchase", async (req, res) => {
+app.post("/savePurchase", async (req, resp) => {
   try {
     await client.connect();
     // Select a database
     const db = client.db("mozziy_new");
     console.log("req.body", req.body)
+    const {owner, id, purchaser, stripePayment} = req.body.paymentData;
     const collection2 = db.collection("User");
     const res = await collection2.findOne({
-      _id: new ObjectId(req.body.owner),
+      _id: new ObjectId(owner),
     });
     console.log(res,"res");
     if(res){
     if (res.hasOwnProperty('connectAccountId')) {
       const connectId = res.connectAccountId;
       console.log("connectId", connectId);
-      console.log(
-        "req.body.stripePayment.paymentIntent.id",
-        req.body.stripePayment.paymentIntent.id
-      );
+   
       await checkPaymentIntent(
         connectId,
-        req.body.stripePayment.paymentIntent.id
+        stripePayment.paymentIntent.id
       );
       // Select a collection
       const collection = db.collection("purchases");
 
       let data = {
-        stripePayment: req.body.stripePayment,
-        owner: new ObjectId(req.body.owner),
-        purchaser: new ObjectId(req.body.purchaser),
-        event_id: new ObjectId(req.body.id),
+        stripePayment: stripePayment,
+        owner: new ObjectId(owner),
+        purchaser: new ObjectId(purchaser),
+        event_id: new ObjectId(id),
       };
 
       let result = await collection.insertOne(data);
 
       if (result.acknowledged) {
-        res.status(200).send({ msg: "Purchase saved successfully" });
+        resp.status(200).send({ msg: "Purchase saved successfully" });
       }
     } else {
-      res
+      resp
         .status(400)
         .send({ msg: "No connect account exists for user who has uploaded this event", statusCode: 400 });
     }}
