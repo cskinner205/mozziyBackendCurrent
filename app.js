@@ -1370,7 +1370,7 @@ app.post(
                 const targetImage = {
                   S3Object: {
                     Bucket: "find-my-face-2",
-                    Name: value.profile_Image.path,
+                    Name: value.profile_Image.key,
                   },
                 };
                 try {
