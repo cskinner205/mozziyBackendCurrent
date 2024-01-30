@@ -1035,7 +1035,15 @@ app.post("/api/getAllFavoriteEvents", async (req, res) => {
         $unwind: "$favouriteEvents",
       },{
         $project:{
-          favouriteEvents:1
+          _id:"$favouriteEvents._id",
+          userForeignKey: '$favouriteEvents.userForeignKey',
+          fileData: '$favouriteEvents.fileData',
+          category: '$favouriteEvents.category',
+          photoTitle: '$favouriteEvents.photoTitle',
+          photoDescription: '$favouriteEvents.photoDescription',
+          price: '$favouriteEvents.price',
+          isFavorite: '$favoriteEvents.isFavorite',
+          createdAt: '$favoriteEvents.createdAt'
         }
       }
     ];
