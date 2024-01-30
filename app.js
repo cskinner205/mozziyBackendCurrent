@@ -318,8 +318,9 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
   // Select a collection
   const collection = db.collection("User");
 
-  let connectId = await collection.findOne({ _id: req.body.userId })
+  let connectId = await collection.findOne({ _id: new ObjectId(req.body.userId) })
 
+ 
   if (!connectId.hasOwnProperty('connectAccountId')) {
     console.log("this is run what i wanted")
   return  res
