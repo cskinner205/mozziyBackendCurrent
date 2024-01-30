@@ -1117,7 +1117,7 @@ app.post("/savePurchase", async (req, res) => {
     await client.connect();
     // Select a database
     const db = client.db("mozziy_new");
-
+    console.log("req.body",req.body)
     const collection2 = db.collection("User");
     const res = await collection2.findOne({
       _id: new ObjectId(req.body.owner),
