@@ -110,8 +110,8 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
         result.map(async (value) => {
           if (value?.fileData) {
             let path = value.fileData.key
-              // ? value.fileData.path
-              // : value.fileData.Location;
+            // ? value.fileData.path
+            // : value.fileData.Location;
             try {
               const targetImage = {
                 S3Object: {
@@ -312,6 +312,24 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
   console.log("upload events is run");
   console.log("upload events is run");
   console.log("upload events is run");
+  await client.connect();
+  // Select a database
+  const db = client.db("mozziy_new");
+  // Select a collection
+  const collection = db.collection("User");
+
+  let connectId = await collection.findOne({ _id: req.body.userId })
+  if (connectId.hasOwnProperty('connectAccountId')) {
+    return res
+      .status(200)
+      .send({
+        msg: "Stripe account exists",
+        Status: "Success",
+        statusCode: 200,
+      });
+  }
+
+
 
   if (!req.files || !req.files.length) {
     return res.status(400).send("No files were uploaded.");
@@ -806,7 +824,7 @@ app.post("/api/getFeedEvents", async (req, res) => {
     const favoriteEvents = await favouriteCollections
       .find({ user_id: new ObjectId(req.body.userId) })
       .toArray();
-      console.log(favoriteEvents)
+    console.log(favoriteEvents)
     const favouriteEventsIds = favoriteEvents.map((fav) => fav.event_id.toString());
     const userResult = await userCollection.findOne({
       _id: new ObjectId(req.body.userId),
@@ -828,13 +846,13 @@ app.post("/api/getFeedEvents", async (req, res) => {
         });
     }
     let imagePath = userResult.profile_Image.key
-      // ? userResult.profile_Image.path
-      // : userResult.profile_Image.Location;
+    // ? userResult.profile_Image.path
+    // : userResult.profile_Image.Location;
     console.log("we are here");
     const sourceImage = {
       S3Object: {
-        Bucket:"find-my-face-2",
-        Name:imagePath,
+        Bucket: "find-my-face-2",
+        Name: imagePath,
       },
     };
     console.log("we are here22");
@@ -849,9 +867,9 @@ app.post("/api/getFeedEvents", async (req, res) => {
           console.log("we are here44444");
           if (value?.fileData) {
             let path = value.fileData.key
-              // ? value.fileData.path
-              // : value.fileData.Location;
-            console.log("this is the path",path)
+            // ? value.fileData.path
+            // : value.fileData.Location;
+            console.log("this is the path", path)
             const targetImage = {
               S3Object: {
                 Bucket: "find-my-face-2",
@@ -860,8 +878,8 @@ app.post("/api/getFeedEvents", async (req, res) => {
             };
 
             console.log("we are here555555");
-            const params2={
-              Image:targetImage,
+            const params2 = {
+              Image: targetImage,
             };
             console.log("we are here66666");
 
@@ -888,9 +906,9 @@ app.post("/api/getFeedEvents", async (req, res) => {
                       const similarity = match.Similarity;
                       // console.log('similarity:', similarity)
                       // if(favouriteEventsIds.)
-                      if(favouriteEventsIds.includes(value._id.toString())){
+                      if (favouriteEventsIds.includes(value._id.toString())) {
                         value.isFavorite = true
-                        }
+                      }
                       finalResult.push(value);
                       // console.log(finalResult, "finalResult000000")
                     })
@@ -931,12 +949,12 @@ app.post("/api/getFeedEvents", async (req, res) => {
           // })
 
           // Promise.all(promises).then(()=>{
-            res.status(200).json({
-              allEvents: finalResult,
-              favouriteEventsIds: favouriteEventsIds,
-              status: true,
-              statusCode: 200,
-            });
+          res.status(200).json({
+            allEvents: finalResult,
+            favouriteEventsIds: favouriteEventsIds,
+            status: true,
+            statusCode: 200,
+          });
           // })
         } else {
           res.status(200).json({
@@ -1033,9 +1051,9 @@ app.post("/api/getAllFavoriteEvents", async (req, res) => {
       },
       {
         $unwind: "$favouriteEvents",
-      },{
-        $project:{
-          _id:"$favouriteEvents._id",
+      }, {
+        $project: {
+          _id: "$favouriteEvents._id",
           userForeignKey: '$favouriteEvents.userForeignKey',
           fileData: '$favouriteEvents.fileData',
           category: '$favouriteEvents.category',
@@ -1069,14 +1087,14 @@ app.post("/addEventToFavorite", async (req, res) => {
     await client.connect();
     const db = client.db("mozziy_new");
     const collection = db.collection("Favorites");
-    if (heart===true) {
+    if (heart === true) {
       let duplicate = await collection.findOne({
         user_id: new ObjectId(loggedInUserId),
         event_id: new ObjectId(id),
       })
-      if(duplicate){
+      if (duplicate) {
         res.status(200).send({ msg: "Event already in favorites", status: 200 });
-      }else{
+      } else {
         const result = await collection.insertOne({
           user_id: new ObjectId(loggedInUserId),
           event_id: new ObjectId(id),
@@ -1087,8 +1105,8 @@ app.post("/addEventToFavorite", async (req, res) => {
           res.status(200).send({ msg: "Event added to favorites", status: 200 });
         }
       }
-        
-      
+
+
     } else {
       const result = await collection.deleteOne({
         user_id: new ObjectId(loggedInUserId),
@@ -1117,7 +1135,7 @@ app.post("/savePurchase", async (req, res) => {
     await client.connect();
     // Select a database
     const db = client.db("mozziy_new");
-    console.log("req.body",req.body)
+    console.log("req.body", req.body)
     const collection2 = db.collection("User");
     const res = await collection2.findOne({
       _id: new ObjectId(req.body.owner),
@@ -1812,7 +1830,7 @@ app.post("/api/deleteAccountLogic", async (req, res) => {
     const deletedEventsResult = await eventCollection.deleteMany(filter);
     console.log(deletedEventsResult)
     if (userQueryResult.acknowledged) {
-        res.status(200).json({ msg: "User Deleted SuccessFully", statusCode: 200 })
+      res.status(200).json({ msg: "User Deleted SuccessFully", statusCode: 200 })
     } else {
       res.status(400).json({ msg: "There is some error", statusCode: 400 })
     }
@@ -1821,7 +1839,7 @@ app.post("/api/deleteAccountLogic", async (req, res) => {
     console.log(err)
     res.status(400).json({ msg: err, statusCode: 400 })
   }
-  
+
 })
 
 app.get('/api/image', (req, res) => {
@@ -1839,9 +1857,9 @@ app.get('/api/normalSignIn', (req, res) => {
   res.render("NormalSignIn.ejs")
 })
 
-app.post('/api/googlePayloadInfo', async(req, res) => {
-try{
-  console.log(req.body)
+app.post('/api/googlePayloadInfo', async (req, res) => {
+  try {
+    console.log(req.body)
     let { credential, clientId } = req.body
     console.log("googlePayload is run")
     const ticket = await googleclient.verifyIdToken({
@@ -1854,32 +1872,32 @@ try{
     const userid = payload['sub'];
 
     let email = payload.email;
-    console.log("this is email recieved from payload",email);
-   await client.connect();
-   // Select a database
-   const db = client.db("mozziy_new");
-   // Select a collection
-   const userCollection = db.collection("User");
-   const eventCollection = db.collection("Event");
-   const userEmailResult = await userCollection.findOne({ email: email })
-   if(!userEmailResult){
-    res.status(404).json({msg:"No user exists with this email", statusCode:400})
-    return;
-   }else if(userEmailResult.signedByGoogle === false ){
-     res.status(400).json({  "message": "Invalid authentication method. Please use email and password.", "error": "InvalidRequest"})
-     return;
+    console.log("this is email recieved from payload", email);
+    await client.connect();
+    // Select a database
+    const db = client.db("mozziy_new");
+    // Select a collection
+    const userCollection = db.collection("User");
+    const eventCollection = db.collection("Event");
+    const userEmailResult = await userCollection.findOne({ email: email })
+    if (!userEmailResult) {
+      res.status(404).json({ msg: "No user exists with this email", statusCode: 400 })
+      return;
+    } else if (userEmailResult.signedByGoogle === false) {
+      res.status(400).json({ "message": "Invalid authentication method. Please use email and password.", "error": "InvalidRequest" })
+      return;
     }
-   const userQueryResult = await userCollection.deleteOne({ email: email })
-   console.log("userQueryResult", userQueryResult)
-   const filter = { userForeignKey: new ObjectId(userEmailResult._id) }
-   const deletedEventsResult = await eventCollection.deleteMany(filter);
-   console.log(deletedEventsResult)
-   if (userQueryResult.acknowledged) {
-       res.status(200).json({ msg: "User Deleted SuccessFully", statusCode: 200 })
-   } else {
-     res.status(400).json({ msg: "There is some error", statusCode: 400 })
-   }
-}catch(err){console.log(err)}
+    const userQueryResult = await userCollection.deleteOne({ email: email })
+    console.log("userQueryResult", userQueryResult)
+    const filter = { userForeignKey: new ObjectId(userEmailResult._id) }
+    const deletedEventsResult = await eventCollection.deleteMany(filter);
+    console.log(deletedEventsResult)
+    if (userQueryResult.acknowledged) {
+      res.status(200).json({ msg: "User Deleted SuccessFully", statusCode: 200 })
+    } else {
+      res.status(400).json({ msg: "There is some error", statusCode: 400 })
+    }
+  } catch (err) { console.log(err) }
 })
 
 app.listen(PORT, () => {
