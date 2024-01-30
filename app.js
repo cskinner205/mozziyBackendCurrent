@@ -1489,7 +1489,7 @@ app.post("/checkConnectAccountExists", async (req, res) => {
     const result = await collection.findOne({ _id: new ObjectId(req.body.id) });
     console.log(result, "this is the resulr");
     console.log("this i s run 3");
-    if (result.connectAccountId) {
+    if (result.hasOwnProperty('connectAccountId')) {
       res
         .status(200)
         .send({
