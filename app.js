@@ -1123,7 +1123,7 @@ app.post("/savePurchase", async (req, res) => {
       _id: new ObjectId(req.body.owner),
     });
 
-    if (res.connectAccountId != "") {
+    if (res.hasOwnProperty(connectAccountId)) {
       const connectId = res.connectAccountId;
       console.log("connectId", connectId);
       console.log(
@@ -1152,7 +1152,7 @@ app.post("/savePurchase", async (req, res) => {
     } else {
       res
         .status(400)
-        .send({ msg: "No connect account exists", statusCode: 400 });
+        .send({ msg: "No connect account exists for user who has uploaded this event", statusCode: 400 });
     }
   } catch (err) {
     console.log("Errrrrrrr", err);
