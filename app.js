@@ -1595,7 +1595,7 @@ app.post("/api/getPurchases", async (req, res) => {
   }
 });
 
-app.post("/getLoggedInUserName", async (req, res) => {
+app.post("/getStripeBalance", async (req, res) => {
   try {
     console.log("this is run");
     await client.connect();
