@@ -1204,10 +1204,7 @@ app.post("/savePurchase", async (req, resp) => {
           resp.status(200).json({ msg: "Purchase saved successfully" });
         }
       } else {
-        
-        return resp
-          .status(400)
-          .json({ msg: "No connect account exists for user who has uploaded this event", statusCode: 400 });
+         resp.status(400).json({ msg: "No connect account exists for user who has uploaded this event", statusCode: 400 });
       }
     } catch(err){console.log("this is the error",err)}
   }
