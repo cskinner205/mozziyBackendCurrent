@@ -328,7 +328,7 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
         .status(400)
         .send({
           msg: "Stripe account does not exist",
-          Status: "Failed",
+          accountStatus: 'Restricted',
           statusCode: 400,
         });
         rej()
@@ -336,8 +336,6 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
 
       console.log("we are inside else")
       try {
-
-
         stripe.accounts.retrieve(connectId.connectAccountId, (err, account) => {
           if (err) {
             console.error('Error retrieving account information:', err);
@@ -350,7 +348,7 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
                 .status(400)
                 .send({
                   msg: "Stripe account does not exist",
-                  Status: "Failed",
+                  accountStatus: 'Restricted',
                   statusCode: 400,
                 });
 
@@ -1573,7 +1571,7 @@ app.post("/checkConnectAccountExists", async (req, res) => {
             .status(statusCode)
             .send({
               msg: msg,
-              'Account Status': enabled,
+              'accountStatus': enabled,
               statusCode: statusCode,
             });
         }
@@ -1584,7 +1582,7 @@ app.post("/checkConnectAccountExists", async (req, res) => {
         .status(400)
         .send({
           msg: "Stripe account does not exist",
-          Status: "Failed",
+          accountStatus: "Restricted",
           statusCode: 400,
         });
     }
