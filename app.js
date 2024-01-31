@@ -419,6 +419,7 @@ if(promise1)
                 photoDescription: req.body.photoDescription,
                 price: Number(req.body.price),
                 isFavorite: false,
+                isDeletedByOwner:false,
                 createdAt: new Date().toISOString(),
               };
               console.log("this is the data", data);
@@ -760,7 +761,7 @@ app.post("/api/getAllEvents", async (req, res) => {
     const favoriteEvents = await favouriteCollections
       .find({ user_id: new ObjectId(req.body.userId) })
       .toArray();
-    const allEvents = await collection.find().toArray();
+    const allEvents = await collection.find({"isDeletedByOwner":false}).toArray();
     // console.log("favoriteEvents", favoriteEvents)
     const favouriteEventsIds = favoriteEvents.map((fav) => fav.event_id);
     // console.log("favouriteEventsIds", favouriteEventsIds)
@@ -894,7 +895,7 @@ app.post("/api/getFeedEvents", async (req, res) => {
     const imagesWithFaces = [];
 
     const eventCollection = db.collection("Event");
-    const eventResult = await eventCollection.find({}).toArray();
+    const eventResult = await eventCollection.find({isDeletedByOwner: false}).toArray();
     console.log("we are here333");
     try {
       const data = await Promise.all(
@@ -1890,9 +1891,9 @@ app.post("/api/deleteAccountLogic", async (req, res) => {
     const userEmailResult = await userCollection.findOne({ email: email })
     const userQueryResult = await userCollection.deleteOne({ email: email })
     console.log("userQueryResult", userQueryResult)
-    const filter = { userForeignKey: new ObjectId(userEmailResult._id) }
-    const deletedEventsResult = await eventCollection.deleteMany(filter);
-    console.log(deletedEventsResult)
+    // const filter = { userForeignKey: new ObjectId(userEmailResult._id) }
+    // const deletedEventsResult = await eventCollection.deleteMany(filter);
+    // console.log(deletedEventsResult)
     if (userQueryResult.acknowledged) {
       res.status(200).json({ msg: "User Deleted SuccessFully", statusCode: 200 })
     } else {
@@ -1953,9 +1954,9 @@ app.post('/api/googlePayloadInfo', async (req, res) => {
     }
     const userQueryResult = await userCollection.deleteOne({ email: email })
     console.log("userQueryResult", userQueryResult)
-    const filter = { userForeignKey: new ObjectId(userEmailResult._id) }
-    const deletedEventsResult = await eventCollection.deleteMany(filter);
-    console.log(deletedEventsResult)
+    // const filter = { userForeignKey: new ObjectId(userEmailResult._id) }
+    // const deletedEventsResult = await eventCollection.deleteMany(filter);
+    // console.log(deletedEventsResult)
     if (userQueryResult.acknowledged) {
       res.status(200).json({ msg: "User Deleted SuccessFully", statusCode: 200 })
     } else {
