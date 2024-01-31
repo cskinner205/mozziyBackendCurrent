@@ -332,10 +332,13 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
         statusCode: 400,
       });
   } else {
+
+    console.log("we are inside else")
     stripe.accounts.retrieve(connectId.connectAccountId, (err, account) => {
       if (err) {
         console.error('Error retrieving account information:', err);
       } else {
+        console.log("account chargse enabled",account.charges_enabled)
         console.log('Account Status:', account.charges_enabled ? 'Enabled' : 'Restricted');
         let enabled = account.charges_enabled ? 'Enabled' : 'Restricted'
         if (enabled === 'Restricted') {
