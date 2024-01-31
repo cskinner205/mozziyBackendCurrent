@@ -334,6 +334,9 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
   } else {
 
     console.log("we are inside else")
+    try{
+
+    
     stripe.accounts.retrieve(connectId.connectAccountId, (err, account) => {
       if (err) {
         console.error('Error retrieving account information:', err);
@@ -352,6 +355,7 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
         }
       }
     });
+  }catch(err){console.log("this is expected", err)}
   }
 
 
