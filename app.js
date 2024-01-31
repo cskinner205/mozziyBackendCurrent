@@ -1610,6 +1610,7 @@ app.post("/getLoggedInUserName", async (req, res) => {
     let email = result.email;
 
     let connectedAccountId = result.connectAccountId;
+    console.log('connectedAccountId',connectedAccountId)
     let balance = "";
     await stripe.balance.retrieve(
       { stripeAccount: connectedAccountId },
@@ -1617,7 +1618,7 @@ app.post("/getLoggedInUserName", async (req, res) => {
         if (err) {
           console.error("Error retrieving balance:", err);
         } else {
-          // console.log('Balance:', balance);
+          console.log('Balance:', balance);
           balance = balance.available[0].amount / 100;
           // Access available and pending balance as needed: balance.available and balance.pending
           res.send({ name: data, balance: balance, email: email });
