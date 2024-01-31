@@ -1170,7 +1170,7 @@ app.post("/savePurchase", async (req, resp) => {
     // Select a database
     const db = client.db("mozziy_new");
     console.log("req.body", req.body)
-    const { owner, id, purchaser, stripePayment } = req.body.paymentData;
+    const { owner, id, purchaser, stripePayment } = req.body;
     const collection2 = db.collection("User");
     const res = await collection2.findOne({
       _id: new ObjectId(owner),
@@ -1212,7 +1212,7 @@ app.post("/savePurchase", async (req, resp) => {
   }
   } catch (err) {
     console.log("Errrrrrrr", err);
-    res.status(400).json({ msg: err.message, statusCode: 400 });
+    resp.status(400).json({ msg: err.message, statusCode: 400 });
   }
 });
 
