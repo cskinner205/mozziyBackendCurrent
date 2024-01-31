@@ -1198,17 +1198,17 @@ app.post("/savePurchase", async (req, resp) => {
         let result = await collection.insertOne(data);
 
         if (result.acknowledged) {
-          resp.status(200).send({ msg: "Purchase saved successfully" });
+          resp.status(200).json({ msg: "Purchase saved successfully" });
         }
       } else {
         resp
           .status(400)
-          .send({ msg: "No connect account exists for user who has uploaded this event", statusCode: 400 });
+          .json({ msg: "No connect account exists for user who has uploaded this event", statusCode: 400 });
       }
     }
   } catch (err) {
     console.log("Errrrrrrr", err);
-    res.status(400).send({ msg: err.message, statusCode: 400 });
+    res.status(400).json({ msg: err.message, statusCode: 400 });
   }
 });
 
