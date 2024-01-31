@@ -320,17 +320,36 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
 
   let connectId = await collection.findOne({ _id: new ObjectId(req.body.userId) })
 
- 
+
   if (!connectId.hasOwnProperty('connectAccountId')) {
+
     console.log("this is run what i wanted")
-  return  res
-  .status(400)
-  .send({
-    msg: "Stripe account does not exist",
-    Status: "Failed",
-    statusCode: 400,
-  });
-}
+    return res
+      .status(400)
+      .send({
+        msg: "Stripe account does not exist",
+        Status: "Failed",
+        statusCode: 400,
+      });
+  } else {
+    stripe.accounts.retrieve(connectId.connectAccountId, (err, account) => {
+      if (err) {
+        console.error('Error retrieving account information:', err);
+      } else {
+        console.log('Account Status:', account.charges_enabled ? 'Enabled' : 'Restricted');
+        let enabled = account.charges_enabled ? 'Enabled' : 'Restricted'
+        if (enabled === 'Restricted') {
+          return res
+            .status(400)
+            .send({
+              msg: "Stripe account does not exist",
+              Status: "Failed",
+              statusCode: 400,
+            });
+        }
+      }
+    });
+  }
 
 
 
@@ -1139,41 +1158,42 @@ app.post("/savePurchase", async (req, resp) => {
     // Select a database
     const db = client.db("mozziy_new");
     console.log("req.body", req.body)
-    const {owner, id, purchaser, stripePayment} = req.body.paymentData;
+    const { owner, id, purchaser, stripePayment } = req.body.paymentData;
     const collection2 = db.collection("User");
     const res = await collection2.findOne({
       _id: new ObjectId(owner),
     });
-    console.log(res,"res");
-    if(res){
-    if (res.hasOwnProperty('connectAccountId')) {
-      const connectId = res.connectAccountId;
-      console.log("connectId", connectId);
-   
-      await checkPaymentIntent(
-        connectId,
-        stripePayment.paymentIntent.id
-      );
-      // Select a collection
-      const collection = db.collection("purchases");
+    console.log(res, "res");
+    if (res) {
+      if (res.hasOwnProperty('connectAccountId')) {
+        const connectId = res.connectAccountId;
+        console.log("connectId", connectId);
 
-      let data = {
-        stripePayment: stripePayment,
-        owner: new ObjectId(owner),
-        purchaser: new ObjectId(purchaser),
-        event_id: new ObjectId(id),
-      };
+        await checkPaymentIntent(
+          connectId,
+          stripePayment.paymentIntent.id
+        );
+        // Select a collection
+        const collection = db.collection("purchases");
 
-      let result = await collection.insertOne(data);
+        let data = {
+          stripePayment: stripePayment,
+          owner: new ObjectId(owner),
+          purchaser: new ObjectId(purchaser),
+          event_id: new ObjectId(id),
+        };
 
-      if (result.acknowledged) {
-        resp.status(200).send({ msg: "Purchase saved successfully" });
+        let result = await collection.insertOne(data);
+
+        if (result.acknowledged) {
+          resp.status(200).send({ msg: "Purchase saved successfully" });
+        }
+      } else {
+        resp
+          .status(400)
+          .send({ msg: "No connect account exists for user who has uploaded this event", statusCode: 400 });
       }
-    } else {
-      resp
-        .status(400)
-        .send({ msg: "No connect account exists for user who has uploaded this event", statusCode: 400 });
-    }}
+    }
   } catch (err) {
     console.log("Errrrrrrr", err);
     res.status(400).send({ msg: err.message, statusCode: 400 });
@@ -1509,14 +1529,35 @@ app.post("/checkConnectAccountExists", async (req, res) => {
     const result = await collection.findOne({ _id: new ObjectId(req.body.id) });
     console.log(result, "this is the resulr");
     console.log("this i s run 3");
+
     if (result.hasOwnProperty('connectAccountId')) {
-      res
-        .status(200)
-        .send({
-          msg: "Stripe account exists",
-          Status: "Success",
-          statusCode: 200,
-        });
+
+      stripe.accounts.retrieve(result.connectAccountId, (err, account) => {
+        if (err) {
+          console.error('Error retrieving account information:', err);
+          res
+            .status(400)
+            .send({
+              msg: 'There is some error',
+              error: err,
+              Status: "Failed",
+              statusCode: 400,
+            });
+        } else {
+          console.log('Account Status:', account.charges_enabled ? 'Enabled' : 'Restricted');
+          let enabled = account.charges_enabled ? 'Enabled' : 'Restricted'
+          // res.json({ 'Account Status': enabled })
+          res
+            .status(200)
+            .send({
+              msg: "Stripe account exists",
+              'Account Status': enabled,
+              Status: "Success",
+              statusCode: 200,
+            });
+        }
+      });
+
     } else {
       res
         .status(400)
@@ -1610,7 +1651,7 @@ app.post("/getStripeBalance", async (req, res) => {
     let email = result.email;
 
     let connectedAccountId = result.connectAccountId;
-    console.log('connectedAccountId',connectedAccountId)
+    console.log('connectedAccountId', connectedAccountId)
     let balance = "";
     await stripe.balance.retrieve(
       { stripeAccount: connectedAccountId },
