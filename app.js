@@ -1547,13 +1547,20 @@ app.post("/checkConnectAccountExists", async (req, res) => {
           console.log('Account Status:', account.charges_enabled ? 'Enabled' : 'Restricted');
           let enabled = account.charges_enabled ? 'Enabled' : 'Restricted'
           // res.json({ 'Account Status': enabled })
+          let msg = ''
+          let statusCode = 200
+          if (enabled === 'Enabled') {
+            msg = 'Stripe account exists'
+          } else {
+            msg = "Stripe account does not exists",
+            statusCode= 400
+          }
           res
-            .status(200)
+            .status(statusCode)
             .send({
-              msg: "Stripe account exists",
+              msg: msg,
               'Account Status': enabled,
-              Status: "Success",
-              statusCode: 200,
+              statusCode: statusCode,
             });
         }
       });
