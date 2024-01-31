@@ -1179,27 +1179,30 @@ app.post("/savePurchase", async (req, resp) => {
     if (res) {
       try{
 
+        console.log("we are here1111")
       
       if (res.hasOwnProperty('connectAccountId')) {
+        console.log("we are here2222")
         const connectId = res.connectAccountId;
         console.log("connectId", connectId);
-
+        console.log("we are here33333")
         await checkPaymentIntent(
           connectId,
           stripePayment.paymentIntent.id
         );
+        console.log("we are here4444")
         // Select a collection
         const collection = db.collection("purchases");
-
+        console.log("we are here55555")
         let data = {
           stripePayment: stripePayment,
           owner: new ObjectId(owner),
           purchaser: new ObjectId(purchaser),
           event_id: new ObjectId(id),
         };
-
+        console.log("we are here6666")
         let result = await collection.insertOne(data);
-
+        console.log("we are here7777")
         if (result.acknowledged) {
           resp.status(200).json({ msg: "Purchase saved successfully" });
         }
