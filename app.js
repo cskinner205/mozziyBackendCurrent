@@ -1170,7 +1170,7 @@ app.post("/savePurchase", async (req, resp) => {
     // Select a database
     const db = client.db("mozziy_new");
     console.log("req.body", req.body)
-    const { owner, id, purchaser, stripePayment } = req.body.paymentData;
+    const { owner, id, purchaser, stripePayment } = req.body;
     const collection2 = db.collection("User");
     const res = await collection2.findOne({
       _id: new ObjectId(owner),
@@ -1204,6 +1204,7 @@ app.post("/savePurchase", async (req, resp) => {
           resp.status(200).json({ msg: "Purchase saved successfully" });
         }
       } else {
+        
         return resp
           .status(400)
           .json({ msg: "No connect account exists for user who has uploaded this event", statusCode: 400 });
