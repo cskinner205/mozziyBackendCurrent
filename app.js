@@ -1031,7 +1031,7 @@ app.delete("/api/deleteEvent", async (req, res) => {
     const db = client.db("mozziy_new");
     // Select a collection
     const collection = db.collection("Event");
-    console.log(req.body);
+    console.log("req.body",req.body);
     const result = await collection.findOneAndUpdate(
       { _id: new ObjectId(req.body.id) },
       { $set: { isDeletedByOwner: true } },
