@@ -182,7 +182,7 @@ app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
   }
 });
 
-app.post(
+app.post(  
   "/api/uploadProfilePicture",
   upload.array("images"),
   async (req, res) => {
