@@ -1035,7 +1035,7 @@ app.delete("/api/deleteEvent", async (req, res) => {
     const result = await collection.findOneAndUpdate(
       { _id: new ObjectId(req.body.id) },
       { $set: { isDeletedByOwner: true } },
-      { upsert: true, returnDocument: "after" }
+      { upsert: true, returnDocument: 'after' }
     );
     console.log(result, "result");
     // const findOneAndUpdate =
