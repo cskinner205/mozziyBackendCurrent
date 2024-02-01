@@ -325,11 +325,11 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
 
       console.log("this is run what i wanted")
       return res
-        .status(400)
+        .status(200)
         .send({
           msg: "Stripe account does not exist",
           accountStatus: 'Restricted',
-          statusCode: 400,
+          statusCode: 200,
         });
         rej()
     } else {
@@ -345,11 +345,11 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
             let enabled = account.charges_enabled ? 'Enabled' : 'Restricted'
             if (enabled === 'Restricted') {
               res
-                .status(400)
+                .status(200)
                 .send({
                   msg: "Stripe account does not exist",
                   accountStatus: 'Restricted',
-                  statusCode: 400,
+                  statusCode: 200,
                 });
 
                 rej(false)
@@ -1208,7 +1208,7 @@ app.post("/savePurchase", async (req, resp) => {
         }
       } else {
         console.log("we are here78888")
-         resp.status(400).send({ msg: "No connect account exists for user who has uploaded this event", statusCode: 400 });
+         resp.status(200).send({ msg: "No connect account exists for user who has uploaded this event", statusCode: 200 });
       }
     } catch(err){
       console.log("we are here99999999")
