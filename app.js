@@ -451,6 +451,13 @@ if(promise1)
       console.log("This is the error=>", err);
       res.status(400).send({ msg: err.message, statusCode: 400 });
     }
+  }).catch((err)=>{ 
+    es
+    .status(400)
+    .send({
+      msg: err,
+      statusCode: 400,
+    })
   })
 
 });
