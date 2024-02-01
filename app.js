@@ -1031,7 +1031,7 @@ app.delete("/api/deleteEvent", async (req, res) => {
     const db = client.db("mozziy_new");
     // Select a collection
     const collection = db.collection("Event");
-    console.log("req",req,"req")
+    // console.log("req",req,"req")
     console.log("req.body",req.body);
 
     const result = await collection.findOneAndUpdate(
@@ -1042,8 +1042,10 @@ app.delete("/api/deleteEvent", async (req, res) => {
     console.log(result, "result");
     // const findOneAndUpdate =
     // const bucketName = 'find-my-face-2';
-    if (result) {
-      res.json({ msg: "Deleted Successfully" });
+    if (result.length>0) {
+      res.status(200).json({ msg: "Deleted Successfully", statusCode:200 });
+    }else{
+      res.status(400).json({ msg: "No request data recieved", statusCode:400 });
     }
   } catch (err) {
     console.log(err);
