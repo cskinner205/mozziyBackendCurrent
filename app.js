@@ -321,6 +321,7 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
   let connectId = await collection.findOne({ _id: new ObjectId(req.body.userId) })
 
   let promise1 = new Promise((resolve, rej) => {
+    if(connectId){
     if (!connectId.hasOwnProperty('connectAccountId')) {
 
       console.log("this is run what i wanted")
@@ -357,6 +358,8 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
           }
         });
       } catch (err) { console.log("this is expected", err) }
+    }}else{
+      rej()
     }
   })
   console.log()
