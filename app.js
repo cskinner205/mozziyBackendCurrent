@@ -1059,9 +1059,12 @@ app.post("/api/getEvents", async (req, res) => {
     const collection = db.collection("Event");
 
     const result = await collection
-      .find({ userForeignKey: new ObjectId(req.body.userId) })
+      .find({ 
+        userForeignKey: new ObjectId(req.body.userId), 
+        isDeletedByOwner:false 
+      })
       .toArray();
-    let newResult = result.filter((res) => !res.isDeletedByOwner);
+    let newResult = result;
     if (newResult) {
       res.status(200).json(newResult);
     }
