@@ -369,7 +369,7 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
                                     "category": req.body.category,
                                     "photoTitle": req.body.photoTitle,
                                     "photoDescription": req.body.photoDescription,
-                                    "price": Number(req.body.price),
+                                    // "price": Number(req.body.price),
                                     "isFavorite": false,
                                     "isDeletedByOwner": false,
                                     "createdAt": new Date().toISOString(),
