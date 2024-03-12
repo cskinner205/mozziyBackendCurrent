@@ -931,7 +931,7 @@ app.post("/addEventToFavorite", async (req, res) => {
     try {
         const { id, heart, loggedInUserId } = req.body;
         const connection = await dbConnect()
-        const collection = await connection.db.collection("Favorites");
+        const collection = connection.db.collection("Favorites");
 
         if (heart === true) {
             const query = { 'user_id': new ObjectId(loggedInUserId), 'event_id': new ObjectId(id) }
@@ -978,7 +978,7 @@ app.post("/savePurchase", async (req, resp) => {
         const { owner, id, purchaser, stripePayment } = req.body;
 
         const connection = await dbConnect()
-        const collection2 = await connection.db.collection("User")
+        const collection2 = connection.db.collection("User")
         const res = await collection2.findOne({ _id: new ObjectId(owner) })
 
         if (res) {
@@ -1513,8 +1513,7 @@ app.post("/api/deleteAccountLogic", async (req, res) => {
     const { email } = req.body
     try {
         const connection = await dbConnect()
-        const userCollection = await connection.db.collection("User")
-        const userQueryResult = await userCollection.deleteOne({ email: email })
+        const userQueryResult = await connection.db.collection("User").deleteOne({ email: email })
 
         // const filter = { userForeignKey: new ObjectId(userEmailResult._id) }
         // const deletedEventsResult = await eventCollection.deleteMany(filter);
