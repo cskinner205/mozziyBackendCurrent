@@ -7,8 +7,7 @@ const ejs = require('ejs');
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const salt = 10;
-const url = process.env.MONGODB_URL;
-const client = new MongoClient(url);
+const URL = process.env.MONGODB_URL;
 const multer = require("multer");
 const PORT = process.env.PORT;
 const AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY;
@@ -27,7 +26,7 @@ const admin = require("firebase-admin");
 const serviceAccount = require("./firebase.json");
 const { datatosend } = require("./privacyPolicy");
 app.use('/images', express.static(path.join(__dirname, 'images')));
-
+const DATA_BASE = 'mozziy_new'
 const { OAuth2Client } = require('google-auth-library');
 const googleclient = new OAuth2Client();
 AWS.config.update({
