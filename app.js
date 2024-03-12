@@ -269,129 +269,122 @@ app.post("/api/create-payment-intent", async (req, res) => {
 });
 
 app.post("/api/upload", upload.array("images"), async (req, res) => {
-    try {
-        const connection = await dbConnect()
-        const collection = connection.db.collection("User");
+  try {
+      const connection = await dbConnect()
+      let connectId = await connection.db.collection("User").findOne({ _id: new ObjectId(req.body.userId) })
 
-        let connectId = await collection.findOne({ _id: new ObjectId(req.body.userId) })
+      let promise1 = new Promise((resolve, rej) => {
+          if (connectId) {
+              if (!connectId.hasOwnProperty('connectAccountId')) {
+                  return res
+                      .status(200)
+                      .send({
+                          msg: "Stripe account does not exist",
+                          accountStatus: 'Restricted',
+                          statusCode: 200,
+                      });
+                  rej()
+              } else {
+                  try {
+                      stripe.accounts.retrieve(connectId.connectAccountId, (err, account) => {
+                          if (!err) {
+                              let enabled = account.charges_enabled ? 'Enabled' : 'Restricted'
+                              if (enabled === 'Restricted') {
+                                  res
+                                      .status(200)
+                                      .send({
+                                          msg: "Stripe account does not exist",
+                                          accountStatus: 'Restricted',
+                                          statusCode: 200,
+                                      });
 
-        let promise1 = new Promise((resolve, rej) => {
-            if (connectId) {
-                if (!connectId.hasOwnProperty('connectAccountId')) {
-                    return res
-                        .status(200)
-                        .send({
-                            msg: "Stripe account does not exist",
-                            accountStatus: 'Restricted',
-                            statusCode: 200,
-                        });
-                    rej()
-                } else {
-                    try {
-                        stripe.accounts.retrieve(connectId.connectAccountId, (err, account) => {
-                            if (!err) {
-                                let enabled = account.charges_enabled ? 'Enabled' : 'Restricted'
-                                if (enabled === 'Restricted') {
-                                    res
-                                        .status(200)
-                                        .send({
-                                            msg: "Stripe account does not exist",
-                                            accountStatus: 'Restricted',
-                                            statusCode: 200,
-                                        });
+                                  rej(false)
+                              } else (resolve(true))
+                          }
+                      });
+                  } catch (err) { console.log("this is expected", err) }
+              }
+          } else {
+              rej()
+          }
+      })
 
-                                    rej(false)
-                                } else (resolve(true))
-                            }
-                        });
-                    } catch (err) { console.log("this is expected", err) }
-                }
-            } else {
-                rej()
-            }
-        })
+      if (promise1)
+          promise1.then(() => {
+              if (!req.files || !req.files.length) {
+                  return res.status(400).send("No files were uploaded.");
+              }
+              try {
+                  const bucketName = "find-my-face-2";
+                  const uploadedData = [];
 
-        if (promise1)
-            promise1.then(() => {
-                if (!req.files || !req.files.length) {
-                    return res.status(400).send("No files were uploaded.");
-                }
-                try {
-                    const bucketName = "find-my-face-2";
-                    const uploadedData = [];
+                  const result1 = Promise.all(
+                      req.files.map(async (value) => {
+                          // const imagePath = value.path;
+                          // const fileContent = fs.readFileSync(imagePath);
+                          const imagePath = value.originalname;
+                          const fileContent = value.buffer;
+                          const objectKey = imagePath;
+                          const params = {
+                              Bucket: bucketName,
+                              Key: objectKey,
+                              Body: fileContent,
+                              ContentType: value.mimetype,
+                          };
 
-                    const result1 = Promise.all(
-                        req.files.map(async (value) => {
-                            // const imagePath = value.path;
-                            // const fileContent = fs.readFileSync(imagePath);
-                            const imagePath = value.originalname;
-                            const fileContent = value.buffer;
-                            const objectKey = imagePath;
-                            const params = {
-                                Bucket: bucketName,
-                                Key: objectKey,
-                                Body: fileContent,
-                                ContentType: value.mimetype,
-                            };
+                          const uploadResult = await s3.upload(params).promise();
+                          uploadedData.push(uploadResult);
 
-                            const uploadResult = await s3.upload(params).promise();
-                            uploadedData.push(uploadResult);
+                      })
+                  );
+                  let totalData = [];
 
-                        })
-                    );
-                    let totalData = [];
-
-                    result1
-                        .then(() => { })
-                        .then(() => {
-                            Promise.all(
-                                req.files.map(async (file, index) => {
-                                    uploadedData[index]["path"] = uploadedData[index]["Location"];
-                                    let data = {
-                                        userForeignKey: new ObjectId(req.body.userId),
-                                        fileData: uploadedData[index],
-                                        // country: req.body.country,
-                                        category: req.body.category,
-                                        photoTitle: req.body.photoTitle,
-                                        photoDescription: req.body.photoDescription,
-                                        // price: Number(req.body.price),
-                                        isFavorite: false,
-                                        isDeletedByOwner: false,
-                                        createdAt: new Date().toISOString(),
-                                    };
-                                    totalData.push(data);
-                                })
-                            );
-                        })
-                        .then(async () => {
-                            if (!req.files) {
-                                return res
-                                    .status(400)
-                                    .json({ message: "No file provided", status: 400 });
-                            } else {
-                                const collection = connection.db.collection("Event");
-                                const result = await collection.insertMany(totalData);
-                                if (result.acknowledged)
-                                    res.json({ message: "Uploaded successfully" });
-                            }
-                        });
-                } catch (err) {
-                    console.log("error", err);
-                    res.status(400).send({ msg: err.message, statusCode: 400 });
-                }
-            }).catch((err) => {
-                es
-                    .status(400)
-                    .send({
-                        msg: err,
-                        statusCode: 400,
-                    })
-            })
-        await connection.client.close()
-    } catch (error) {
-        console.log('error:', error)
-        res.status(400).send({ msg: error.message, statusCode: 400 });
-    }
+                  result1
+                      .then(() => { })
+                      .then(() => {
+                          Promise.all(
+                              req.files.map(async (file, index) => {
+                                  uploadedData[index]["path"] = uploadedData[index]["Location"];
+                                  let data = {
+                                      userForeignKey: new ObjectId(req.body.userId),
+                                      fileData: uploadedData[index],
+                                      // country: req.body.country,
+                                      category: req.body.category,
+                                      photoTitle: req.body.photoTitle,
+                                      photoDescription: req.body.photoDescription,
+                                      // price: Number(req.body.price),
+                                      isFavorite: false,
+                                      isDeletedByOwner: false,
+                                      createdAt: new Date().toISOString(),
+                                  };
+                                  totalData.push(data);
+                              })
+                          );
+                      })
+                      .then(async () => {
+                          if (!req.files) {
+                              return res
+                                  .status(400)
+                                  .json({ message: "No file provided", status: 400 });
+                          } else {
+                              const collection = connection.db.collection("Event");
+                              const result = await collection.insertMany(totalData);
+                              if (result.acknowledged)
+                                  res.json({ message: "Uploaded successfully" });
+                          }
+                      });
+              } catch (err) {
+                  console.log("error", err);
+                  res.status(400).send({ msg: 'ERROR 1', statusCode: 400 });
+              }
+          }).catch((err) => {
+              res.status(400).send({ msg: 'ERROR 2', statusCode: 400 })
+          })
+      await connection.client.close()
+  } catch (error) {
+      console.log('error:', error)
+      res.status(400).send({ msg: "ERROR 3", statusCode: 400 });
+  }
 
 });
 
