@@ -30,6 +30,8 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 
 const { OAuth2Client } = require('google-auth-library');
 const googleclient = new OAuth2Client();
+
+const AWS_BUCKET_NAME = 'find-my-face-2'
 AWS.config.update({
     region: 'us-east-1',
     accessKeyId: AWS_ACCESS_KEY,
@@ -168,8 +170,6 @@ app.post("/api/uploadProfilePicture", upload.array("images"), async (req, res) =
         if (!req.files || !req.files.length) {
             return res.status(400).send("No files were uploaded.");
         }
-
-        const bucketName = "find-my-face-2";
         const uploadedData = [];
 
         req.files.map(async (value) => {
@@ -178,7 +178,7 @@ app.post("/api/uploadProfilePicture", upload.array("images"), async (req, res) =
             const fileContent = value.buffer;
             const objectKey = imagePath;
             const params = {
-                Bucket: bucketName,
+                Bucket: AWS_BUCKET_NAME,
                 Key: objectKey,
                 Body: fileContent,
                 ContentType: value.mimetype,
@@ -289,35 +289,33 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
             //     });
             // }
 
-            if (!req.files || !req.files.length) {
-                return res.status(400).send("No files were uploaded.");
-            }
+            // if (!req.files || !req.files.length) {
+            //     return res.status(400).send("No files were uploaded.");
+            // }
 
-            const bucketName = "find-my-face-2";
             const uploadedData = [];
+            let finalInserArray = [];
+
 
             for (const value of req.files) {
                 const imagePath = value.originalname;
                 const fileContent = value.buffer;
                 const objectKey = imagePath;
-                // const params = {
-                //     Bucket: bucketName,
-                //     Key: objectKey,
-                //     Body: fileContent,
-                //     ContentType: value.mimetype,
-                // };
+                const params = {
+                    Bucket: AWS_BUCKET_NAME,
+                    Key: objectKey,
+                    Body: fileContent,
+                    ContentType: value.mimetype,
+                };
 
-                // const uploadResult = await s3.upload(params).promise();
-                // uploadedData.push(uploadResult);
-            }
+                const uploadResult = await s3.upload(params).promise();
+                uploadResult.path = uploadedData.Location
+                uploadedData.push(uploadResult);
 
-            let totalData = [];
 
-            for (const [index, file] of req.files.entries()) {
-                uploadedData[index]["path"] = uploadedData[index]["Location"];
-                let data = {
+                let insertObject = {
                     userForeignKey: new ObjectId(req.body.userId),
-                    fileData: uploadedData[index],
+                    fileData: uploadResult,
                     category: req.body.category,
                     photoTitle: req.body.photoTitle,
                     photoDescription: req.body.photoDescription,
@@ -325,14 +323,13 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
                     isDeletedByOwner: false,
                     createdAt: new Date().toISOString(),
                 };
-                totalData.push(data);
+                finalInserArray.push(insertObject);
+
             }
 
-            const result = await connection.db.collection("Event").insertMany(totalData);
+            const result = await connection.db.collection("Event").insertMany(finalInserArray);
 
-            if (result.acknowledged) {
-                return res.json({ message: "Uploaded successfully" });
-            }
+            if (result.acknowledged) return res.json({ message: "Uploaded successfully" })
 
         } catch (err) {
             console.log("this is expected", err);
@@ -341,10 +338,8 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
         await connection.client.close();
     } catch (error) {
         console.log('error:', error);
-        return res.status(400).send({ msg: "ERROR 3", statusCode: 400 });
+        return res.status(201).send({ msg: error.message, statusCode: 201 });
     }
-
-
 });
 
 
@@ -1092,13 +1087,12 @@ app.post("/compareUploadedEventFaceWithProfilePics", upload.array("images"), asy
             return res.status(400).send("No files were uploaded.");
         }
 
-        const bucketName = "find-my-face-2";
         req.files.map(async (value) => {
             const imagePath = value.originalname;
             const fileContent = value.buffer;
             const objectKey = imagePath;
             const params = {
-                Bucket: bucketName,
+                Bucket: AWS_BUCKET_NAME,
                 Key: objectKey,
                 Body: fileContent,
                 ContentType: value.mimetype,
