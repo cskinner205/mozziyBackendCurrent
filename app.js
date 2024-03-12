@@ -7,8 +7,8 @@ const ejs = require('ejs');
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const salt = 10;
-const URL = process.env.MONGODB_URL;
-const client = new MongoClient(URL);
+const url = process.env.MONGODB_URL;
+const client = new MongoClient(url);
 const multer = require("multer");
 const PORT = process.env.PORT;
 const AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY;
@@ -27,7 +27,7 @@ const admin = require("firebase-admin");
 const serviceAccount = require("./firebase.json");
 const { datatosend } = require("./privacyPolicy");
 app.use('/images', express.static(path.join(__dirname, 'images')));
-const DATA_BASE = 'mozziy_new'
+
 const { OAuth2Client } = require('google-auth-library');
 const googleclient = new OAuth2Client();
 AWS.config.update({
@@ -347,12 +347,23 @@ app.post("/api/create-payment-intent", async (req, res) => {
 // });
 
 app.post("/api/upload", upload.array("images"), async (req, res) => {
-    const connection = await dbConnect();
-    let connectId = await connection.db.collection("User").findOne({ _id: new ObjectId(req.body.userId) });
+    console.log("upload events is run");
+    console.log("upload events is run");
+    console.log("upload events is run");
+    console.log("upload events is run");
+    await client.connect();
+    // Select a database
+    const db = client.db("mozziy_new");
+    // Select a collection
+    const collection = db.collection("User");
+
+    let connectId = await collection.findOne({ _id: new ObjectId(req.body.userId) })
 
     let promise1 = new Promise((resolve, rej) => {
         if (connectId) {
             if (!connectId.hasOwnProperty('connectAccountId')) {
+
+                console.log("this is run what i wanted")
                 return res
                     .status(200)
                     .send({
@@ -362,10 +373,15 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
                     });
                 rej()
             } else {
+
+                console.log("we are inside else")
                 try {
                     stripe.accounts.retrieve(connectId.connectAccountId, (err, account) => {
                         if (err) {
+                            console.error('Error retrieving account information:', err);
                         } else {
+                            console.log("account chargse enabled", account.charges_enabled)
+                            console.log('Account Status:', account.charges_enabled ? 'Enabled' : 'Restricted');
                             let enabled = account.charges_enabled ? 'Enabled' : 'Restricted'
                             if (enabled === 'Restricted') {
                                 res
@@ -386,7 +402,7 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
             rej()
         }
     })
-
+    console.log()
     if (promise1)
         promise1.then(() => {
             if (!req.files || !req.files.length) {
@@ -411,18 +427,30 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
                         };
 
                         const uploadResult = await s3.upload(params).promise();
+                        console.log("$$$$$$$", uploadResult);
                         uploadedData.push(uploadResult);
+                        //   , (err, data) => {
+                        // if (err) {
+                        //   console.error('Error uploading image:', err);
+                        // } else {
+                        //   console.log('Image uploaded successfully:', data);
+                        // }
+                        // });
                     })
                 );
                 let totalData = [];
 
                 result1
                     .then(() => {
+                        console.log("attat1111", uploadedData);
                     })
                     .then(() => {
                         Promise.all(
                             req.files.map(async (file, index) => {
+                                console.log("helloe=>", uploadedData);
+                                console.log("index", index);
                                 uploadedData[index]["path"] = uploadedData[index]["Location"];
+                                console.log("****=>", uploadedData[index]);
                                 let data = {
                                     userForeignKey: new ObjectId(req.body.userId),
                                     fileData: uploadedData[index],
@@ -430,23 +458,33 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
                                     category: req.body.category,
                                     photoTitle: req.body.photoTitle,
                                     photoDescription: req.body.photoDescription,
-                                    // price: Number(req.body.price),
+                                    price: Number(req.body.price),
                                     isFavorite: false,
                                     isDeletedByOwner: false,
                                     createdAt: new Date().toISOString(),
                                 };
+                                console.log("this is the data", data);
                                 totalData.push(data);
                             })
                         );
                     })
                     .then(async () => {
                         if (!req.files) {
+                            console.log("we are heere111");
                             return res
                                 .status(400)
                                 .json({ message: "No file provided", status: 400 });
                         } else {
-                            const result = await connection.db.collection("Event").insertMany(totalData)
-                            if (result.acknowledged) res.json({ message: "Uploaded successfully" });
+                            await client.connect();
+                            // Select a database
+                            const db = client.db("mozziy_new");
+                            // Select a collection
+                            const collection = db.collection("Event");
+                            console.log("totalData", totalData);
+                            const result = await collection.insertMany(totalData);
+                            console.log("whether data is inserted in mongoDb", result);
+                            if (result.acknowledged)
+                                res.json({ message: "Uploaded successfully" });
                         }
                     });
             } catch (err) {
@@ -1638,6 +1676,8 @@ app.listen(PORT, () => {
 
 
 async function dbConnect() {
+    const URL = process.env.MONGODB_URL;
+    const DATA_BASE = 'mozziy_new'
     try {
         var client = await MongoClient.connect(URL, { useNewUrlParser: true, useUnifiedTopology: true })
         return { client: client, db: client.db(DATA_BASE) }
