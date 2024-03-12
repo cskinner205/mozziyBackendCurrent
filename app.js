@@ -715,7 +715,7 @@ app.post("/api/getFeedEvents", async (req, res) => {
     let finalResult = [];
     try {
         const connection = await dbConnect()
-        const favoriteEvents = await await connection.db.collection("Favorites").find({ user_id: new ObjectId(req.body.userId) }).toArray()
+        const favoriteEvents = await connection.db.collection("Favorites").find({ user_id: new ObjectId(req.body.userId) }).toArray()
         const userResult = await connection.db.collection("User").findOne({ _id: new ObjectId(req.body.userId) })
 
         const favouriteEventsIds = favoriteEvents.map((fav) => fav.event_id.toString());
@@ -743,8 +743,7 @@ app.post("/api/getFeedEvents", async (req, res) => {
             },
         };
 
-        const eventCollection = db.collection("Event");
-        const eventResult = await eventCollection.find({ isDeletedByOwner: false }).toArray();
+        const eventResult = await connection.db.collection("Event").find({ isDeletedByOwner: false }).toArray();
         try {
             const data = await Promise.all(
                 eventResult.map(async (value) => {
@@ -993,7 +992,6 @@ app.post("/savePurchase", async (req, resp) => {
                         stripePayment.paymentIntent.id
                     );
 
-                    const collection = db.collection("purchases");
                     let data = {
                         stripePayment: stripePayment,
                         owner: new ObjectId(owner),
@@ -1001,7 +999,7 @@ app.post("/savePurchase", async (req, resp) => {
                         event_id: new ObjectId(id),
                     };
 
-                    let result = await collection.insertOne(data);
+                    let result = await connection.db.collection('purchases').insertOne(data);
 
                     if (result.acknowledged) {
                         resp.status(200).json({ msg: "Purchase saved successfully" });
