@@ -329,7 +329,7 @@ app.post("/api/upload", upload.array("images"), async (req, res) => {
 
             const result = await connection.db.collection("Event").insertMany(finalInserArray);
 
-            if (result.acknowledged) return res.json({ message: "Uploaded successfully", data: result, form: finalInserArray })
+            if (result.acknowledged) return res.json({ message: "Uploaded successfully", data: result, form: finalInserArray, URL: process.env.MONGODB_URL })
 
         } catch (err) {
             console.log("this is expected", err);
