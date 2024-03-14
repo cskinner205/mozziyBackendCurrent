@@ -651,134 +651,204 @@ app.post("/api/loginWithApple", async (req, res) => {
     }
 });
 
+// app.post("/api/getFeedEvents", async (req, res) => {
+//     let finalResult = [];
+//     try {
+//         const connection = await dbConnect()
+//         const favoriteEvents = await connection.db.collection("Favorites").find({ user_id: new ObjectId(req.body.userId) }).toArray()
+//         const userResult = await connection.db.collection("User").findOne({ _id: new ObjectId(req.body.userId) })
+
+//         const favouriteEventsIds = favoriteEvents.map((fav) => fav.event_id.toString());
+
+//         if (!userResult) {
+//             return res
+//                 .status(400)
+//                 .json({ message: "User not exist", statusCode: 400 });
+//         }
+//         if (!userResult.hasOwnProperty("profile_Image")) {
+//             return res
+//                 .status(200)
+//                 .json({
+//                     message: "Please update your profile pic",
+//                     statusCode: 200,
+//                     allEvents: [],
+//                 });
+//         }
+//         let imagePath = userResult.profile_Image.key
+
+//         const sourceImage = {
+//             S3Object: {
+//                 Bucket: "find-my-face-2",
+//                 Name: imagePath,
+//             },
+//         };
+
+//         const eventResult = await connection.db.collection("Event").find({ isDeletedByOwner: false }).toArray();
+//         try {
+//             const data = await Promise.all(
+//                 eventResult.map(async (value) => {
+
+//                     if (value?.fileData) {
+//                         let path = value.fileData.key
+
+//                         const targetImage = {
+//                             S3Object: {
+//                                 Bucket: "find-my-face-2",
+//                                 Name: path,
+//                             },
+//                         };
+
+//                         const params2 = {
+//                             Image: targetImage,
+//                         };
+
+//                         try {
+//                             const detectTargetImage = await rekognition
+//                                 .detectFaces(params2)
+//                                 .promise();
+//                             if (detectTargetImage.FaceDetails.length > 0) {
+
+//                                 const compareObject = {
+//                                     SourceImage: sourceImage,
+//                                     TargetImage: targetImage,
+//                                     SimilarityThreshold: 90, // Adjust the similarity threshold as needed
+//                                 };
+//                                 const { FaceMatches } = await rekognition
+//                                     .compareFaces(compareObject)
+//                                     .promise();
+
+//                                 if (FaceMatches && FaceMatches.length > 0) {
+//                                     await Promise.all(
+//                                         FaceMatches.map((match) => {
+//                                             const similarity = match.Similarity;
+
+//                                             if (favouriteEventsIds.includes(value._id.toString())) {
+//                                                 value.isFavorite = true
+//                                             }
+//                                             finalResult.push(value);
+//                                         })
+//                                     );
+//                                 }
+//                             }
+//                         } catch (error) {
+//                             console.log("error", error);
+//                         }
+//                     }
+//                 })
+//             );
+
+
+//             if (data) {
+//                 if (finalResult.length > 0) {
+
+//                     // const promises = finalResult.map(finRes=>{
+//                     //   return new Promise((res,rej)=>{
+//                     //    if(favouriteEventsIds.includes(finRes._id.toString())){        
+//                     //     finRes.isFavorite = true
+//                     //     }else{  
+//                     //     }
+//                     //     res();
+//                     //   })
+//                     // })
+
+//                     // Promise.all(promises).then(()=>{
+//                     res.status(200).json({
+//                         allEvents: finalResult,
+//                         favouriteEventsIds: favouriteEventsIds,
+//                         status: true,
+//                         statusCode: 200,
+//                     });
+//                     // })
+//                 } else {
+//                     res.status(200).json({
+//                         allEvents: finalResult,
+//                         msg: "No matching faces found.",
+//                         status: true,
+//                         statusCode: 200,
+//                     });
+//                 }
+//             }
+
+//         } catch (err) {
+//             console.log("error", err);
+//         }
+
+//         await connection.client.close()
+//     } catch (err) {
+//         console.log("error", err);
+//         res.status(400).json({ Error: err, statusCode: 400 });
+//     }
+// });
+
 app.post("/api/getFeedEvents", async (req, res) => {
-    let finalResult = [];
+    const feedEvents = []
     try {
         const connection = await dbConnect()
-        const favoriteEvents = await connection.db.collection("Favorites").find({ user_id: new ObjectId(req.body.userId) }).toArray()
         const userResult = await connection.db.collection("User").findOne({ _id: new ObjectId(req.body.userId) })
 
+        if (!userResult) {
+            await connection.client.close()
+            return res.status(400).json({ message: "User not exist", statusCode: 400 });
+        }
+        if (!userResult?.profile_Image) {
+            await connection.client.close()
+            return res.status(200).json({ message: "Please update your profile pic", statusCode: 200, allEvents: [], });
+        }
+
+        const imagePath = userResult.profile_Image.key
+
+        const favoriteEvents = await connection.db.collection("Favorites").find({ user_id: new ObjectId(req.body.userId) }).toArray()
         const favouriteEventsIds = favoriteEvents.map((fav) => fav.event_id.toString());
 
-        if (!userResult) {
-            return res
-                .status(400)
-                .json({ message: "User not exist", statusCode: 400 });
-        }
-        if (!userResult.hasOwnProperty("profile_Image")) {
-            return res
-                .status(200)
-                .json({
-                    message: "Please update your profile pic",
-                    statusCode: 200,
-                    allEvents: [],
-                });
-        }
-        let imagePath = userResult.profile_Image.key
-
-        const sourceImage = {
+        const SourceImage = {
             S3Object: {
-                Bucket: "find-my-face-2",
+                Bucket: BUCKET_NAME,
                 Name: imagePath,
-            },
-        };
+            }
+        }
 
-        const eventResult = await connection.db.collection("Event").find({ isDeletedByOwner: false }).toArray();
-        try {
-            const data = await Promise.all(
-                eventResult.map(async (value) => {
+        const eventResult = await connection.db.collection("Event").find({ isDeletedByOwner: false }).toArray()
 
-                    if (value?.fileData) {
-                        let path = value.fileData.key
+        for (const value of eventResult) {
+            if (!value?.fileData) continue;
 
-                        const targetImage = {
-                            S3Object: {
-                                Bucket: "find-my-face-2",
-                                Name: path,
-                            },
-                        };
-
-                        const params2 = {
-                            Image: targetImage,
-                        };
-
-                        try {
-                            const detectTargetImage = await rekognition
-                                .detectFaces(params2)
-                                .promise();
-                            if (detectTargetImage.FaceDetails.length > 0) {
-
-                                const compareObject = {
-                                    SourceImage: sourceImage,
-                                    TargetImage: targetImage,
-                                    SimilarityThreshold: 90, // Adjust the similarity threshold as needed
-                                };
-                                const { FaceMatches } = await rekognition
-                                    .compareFaces(compareObject)
-                                    .promise();
-
-                                if (FaceMatches && FaceMatches.length > 0) {
-                                    await Promise.all(
-                                        FaceMatches.map((match) => {
-                                            const similarity = match.Similarity;
-
-                                            if (favouriteEventsIds.includes(value._id.toString())) {
-                                                value.isFavorite = true
-                                            }
-                                            finalResult.push(value);
-                                        })
-                                    );
-                                }
-                            }
-                        } catch (error) {
-                            console.log("error", error);
-                        }
-                    }
-                })
-            );
-
-
-            if (data) {
-                if (finalResult.length > 0) {
-
-                    // const promises = finalResult.map(finRes=>{
-                    //   return new Promise((res,rej)=>{
-                    //    if(favouriteEventsIds.includes(finRes._id.toString())){        
-                    //     finRes.isFavorite = true
-                    //     }else{  
-                    //     }
-                    //     res();
-                    //   })
-                    // })
-
-                    // Promise.all(promises).then(()=>{
-                    res.status(200).json({
-                        allEvents: finalResult,
-                        favouriteEventsIds: favouriteEventsIds,
-                        status: true,
-                        statusCode: 200,
-                    });
-                    // })
-                } else {
-                    res.status(200).json({
-                        allEvents: finalResult,
-                        msg: "No matching faces found.",
-                        status: true,
-                        statusCode: 200,
-                    });
+            const TargetImage = {
+                S3Object: {
+                    Bucket: BUCKET_NAME,
+                    Name: value.fileData.key
                 }
             }
 
-        } catch (err) {
-            console.log("error", err);
+            const params2 = { Image: TargetImage }
+            const detectTargetImage = await rekognition.detectFaces(params2).promise()
+            if (!detectTargetImage.FaceDetails.length) continue
+
+            const compareObject = { SourceImage, TargetImage, SimilarityThreshold: 90 }
+            const { FaceMatches } = await rekognition.compareFaces(compareObject).promise()
+            if (!FaceMatches || !FaceMatches.length) continue
+
+            for (const match of FaceMatches) {
+                const similarity = match.Similarity;
+                if (!favouriteEventsIds.includes(value._id.toString())) continue
+
+                value.isFavorite = true
+                feedEvents.push(value)
+            }
+        }
+
+        if (!feedEvents.length) {
+            await connection.client.close()
+            return res.status(200).json({ allEvents: feedEvents, msg: "No matching faces found.", status: true, statusCode: 200 })
         }
 
         await connection.client.close()
+        return res.status(200).json({ allEvents: feedEvents, favouriteEventsIds: favouriteEventsIds, status: true, statusCode: 200 })
+
     } catch (err) {
         console.log("error", err);
-        res.status(400).json({ Error: err, statusCode: 400 });
+        res.status(400).json({ Error: err, statusCode: 400 })
     }
-});
+})
 
 app.delete("/api/deleteEvent", async (req, res) => {
     try {
