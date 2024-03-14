@@ -1028,125 +1028,75 @@ app.get("/testSendNoti", (req, res) => {
 
 app.post("/compareUploadedEventFaceWithProfilePics", upload.array("images"), async (req, res) => {
     try {
+        const finalResult = []
         const connection = await dbConnect()
 
-        let finalResult = [];
-
         if (!req.files || !req.files.length) {
-            return res.status(400).send("No files were uploaded.");
+            return res.status(400).send("No files were uploaded.")
         }
 
-        req.files.map(async (value) => {
+        await Promise.all(req.files.map(async (value) => {
             const imagePath = value.originalname;
-            const fileContent = value.buffer;
-            const objectKey = imagePath;
-            const params = {
-                Bucket: AWS_BUCKET_NAME,
-                Key: objectKey,
-                Body: fileContent,
-                ContentType: value.mimetype,
-            };
-            const result1 = await s3.putObject(params).promise();
 
-            const sourceImage = {
+            const SourceImage = {
                 S3Object: {
-                    Bucket: "find-my-face-2",
+                    Bucket: AWS_BUCKET_NAME,
                     Name: imagePath,
-                },
-            };
+                }
+            }
 
             const params1 = {
-                Image: sourceImage,
-            };
-
-            try {
-                const detectSourceface = await rekognition.detectFaces(params1).promise();
-                if (!detectSourceface.FaceDetails.length) {
-                    return res.json({ msg: "No faces were detected in the image." });
-                }
-
-            } catch (error) {
-                console.error("error", error);
-                res.status(400).json({ error: error + " source image" });
+                Image: SourceImage
             }
 
-            const result = await connection.db.collection("User").find({ profile_Image: { $exists: 1 } }).toArray();
-            const imagesWithFaces = [];
+            const detectSourceface = await rekognition.detectFaces(params1).promise()
+            if (!detectSourceface.FaceDetails.length) {
+                return res.json({ msg: "No faces were detected in the image." })
+            }
 
-            try {
-                const data = Promise.all(
-                    result.map(async (value) => {
-                        try {
-                            const targetImage = {
-                                S3Object: {
-                                    Bucket: "find-my-face-2",
-                                    Name: value.profile_Image.key,
-                                },
-                            };
-                            try {
-                                const params2 = {
-                                    Image: targetImage,
-                                };
-                                const detectTargetImage = await rekognition
-                                    .detectFaces(params2)
-                                    .promise();
-                                if (detectTargetImage.FaceDetails.length > 0) {
-                                    const compareObject = {
-                                        SourceImage: sourceImage,
-                                        TargetImage: targetImage,
-                                        SimilarityThreshold: 90, // Adjust the similarity threshold as needed
-                                    };
+            const result = await connection.db.collection("User").find({ profile_Image: { $exists: 1 } }).toArray()
 
-                                    const { FaceMatches } = await rekognition
-                                        .compareFaces(compareObject)
-                                        .promise();
-
-                                    if (FaceMatches && FaceMatches.length > 0) {
-                                        await Promise.all(
-                                            FaceMatches.map((match) => {
-                                                const similarity = match.Similarity;
-
-                                                // if similarity % is greater than 90 then we we send notification to that specific user images
-                                                if (typeof value.DEVICEFCMTOKEN === "string") {
-                                                    sendNotification(value.DEVICEFCMTOKEN, value.name);
-                                                    finalResult.push(value);
-                                                }
-                                            })
-                                        );
-                                    } else {
-                                        console.log("No matching faces found.");
-                                    }
-                                }
-                            } catch (error) {
-                                console.error("error:", error);
-                                return;
-                            }
-                        } catch (err) {
-                            const error = [];
-                            console.log(err);
-                            error.push(err);
+            await Promise.all(result.map(async (value) => {
+                if (value.profile_Image.key) {
+                    const TargetImage = {
+                        S3Object: {
+                            Bucket: AWS_BUCKET_NAME,
+                            Name: value.profile_Image.key
                         }
-                    })
-                );
-
-                data.then(() => {
-                    if (finalResult.length > 0) {
-                        res.status(200).json(finalResult);
-                        return;
-                    } else {
-                        res.json({ msg: "No matching faces found." });
                     }
-                });
-            } catch (err) {
-                console.log("error", err);
-            }
+
+                    const params2 = { Image: TargetImage }
+
+                    const detectTargetImage = await rekognition.detectFaces(params2).promise()
+                    if (detectTargetImage.FaceDetails.length > 0) {
+                        const compareObject = { SourceImage, TargetImage, SimilarityThreshold: 90 }
+
+                        const { FaceMatches } = await rekognition.compareFaces(compareObject).promise()
+
+                        if (FaceMatches && FaceMatches.length > 0) {
+                            const faceMtach = FaceMatches.some((match) => match.Similarity > 90)
+
+                            if (faceMtach) {
+                                finalResult.push(value)
+                                if (typeof value.DEVICEFCMTOKEN === "string") {
+                                    sendNotification(value.DEVICEFCMTOKEN, value.name);
+
+                                }
+                            }
+                        }
+                    }
+
+                }
+            })
+            )
+            return finalResult.length > 0 ? res.status(200).json(finalResult) : res.json({ msg: "No matching faces found." })
         })
+        )
         await connection.client.close()
     } catch (err) {
-        fResult = { message: err, status: 400 };
+        res.status(400).json({ message: err, status: 400 })
     }
-}
-);
+})
 
 app.get("/test1", (req, res) => res.send("<a href='www.mozziyapp.com'><h1>hello</h1></a>"));
 
