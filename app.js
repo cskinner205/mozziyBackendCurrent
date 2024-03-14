@@ -781,6 +781,7 @@ app.post("/api/loginWithApple", async (req, res) => {
 // });
 
 app.post("/api/getFeedEvents", async (req, res) => {
+    return res.status(200).json({ AWS_ACCESS_KEY, AWS_SECRET_ACCESS_KEY, statusCode: 200 });
     const feedEvents = []
     try {
         const connection = await dbConnect()
