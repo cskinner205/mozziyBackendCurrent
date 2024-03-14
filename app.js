@@ -17,8 +17,8 @@ const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const AWS = require("aws-sdk");
 const fs = require("fs");
 const bodyParser = require("body-parser");
-app.use(bodyParser.json({ limit: '10mb', extended: true }));
-app.use(bodyParser.urlencoded({ limit: '10mb', extended: true, parameterLimit: 50000 }));
+app.use(bodyParser.json({ limit: '20mb', extended: true }));
+app.use(bodyParser.urlencoded({ limit: '20mb', extended: true, parameterLimit: 50000 }));
 app.use("/uploads", express.static("uploads"));
 //  const rekognition = new AWS.Rekognition();
 const cors = require('cors');
@@ -45,7 +45,7 @@ const s3 = new AWS.S3();
 
 app.use(express.json());
 
-const upload = multer({limits: { fileSize: 10 * 1024 * 1024 }})
+const upload = multer({limits: { fileSize: 20 * 1024 * 1024 }})
 
 app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
     try {
