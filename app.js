@@ -1023,6 +1023,7 @@ app.get("/testSendNoti", (req, res) => {
     res.status(200).send({ msg: "done", statusCode: 200 });
 });
 
+
 app.post("/compareUploadedEventFaceWithProfilePics", upload.array("images"), async (req, res) => {
 
     try {
@@ -1094,7 +1095,7 @@ app.post("/compareUploadedEventFaceWithProfilePics", upload.array("images"), asy
                     }
                 }
             }
-            return finalResult.length > 0 ? res.status(200).json(finalResult) : res.json({ msg: "No matching faces found." })
+            return finalResult.length > 0 ? res.status(200).json(finalResult) : res.json({ msg: "Your profile photo and image face do not match. Give it a try with another one!" })
         })
         )
         await connection.client.close()
@@ -1102,7 +1103,6 @@ app.post("/compareUploadedEventFaceWithProfilePics", upload.array("images"), asy
         res.status(400).json({ message: err, status: 400 })
     }
 })
-
 
 app.get("/test1", (req, res) => res.send("<a href='www.mozziyapp.com'><h1>hello</h1></a>"));
 
