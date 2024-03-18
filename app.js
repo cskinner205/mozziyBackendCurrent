@@ -594,60 +594,53 @@ app.post("/api/getAllEvents", async (req, res) => {
 
 app.post("/api/loginWithApple", async (req, res) => {
     try {
-
         let { email, name, id } = req.body;
 
         const connection = await dbConnect()
         const user = await connection.db.collection("User").findOne({ appleId: id });
 
-        if (user) {
-            if (user.signedByApple) {
-                res.status(200).send({
-                    id: user._id,
-                    msg: "Authorized User! Redirect to login page",
-                    signedByApple: true,
-                    statusCode: 200,
-                    profile_Image: user?.profile_Image ? user?.profile_Image : null,
-                    userName: user.name,
-                    isNotifyUserEnabled: user?.isNotifyUserEnabled
-                        ? user?.isNotifyUserEnabled
-                        : null,
-                });
-            } else if (user.signedByApple === false) {
-                res.status(409).send({
-                    msg: "Email already exists!. Please sign in by email and password",
-                    signedByApple: false,
-                    statusCode: 409,
-                });
-            }
-        } else {
-            data = {
-                email,
-                name,
-                image: req?.body?.photo ? req?.body?.photo : null,
-                emailVerified: null,
-                createdAt: new Date().toISOString(),
-                signedByApple: true,
-                appleId: id,
+        if (!user) {
+            const insertObject = {
+                'email': email,
+                'name': name,
+                'image': req?.body?.photo ?? null,
+                'emailVerified': null,
+                'createdAt': new Date().toISOString(),
+                'signedByApple': true,
+                'appleId': id,
             };
-            const result = await collection.insertOne(data);
+            const result = await connection.db.collection("User").insertOne(insertObject);
             if (result.insertedId) {
-                res.status(200).send({
-                    message: "User Created Successfully",
-                    id: result.insertedId,
-                    signedByApple: true,
-                    status: 200,
-                });
+                return res.status(200).send({ message: "User Created Successfully", id: result.insertedId, signedByApple: true, status: 200 })
+            } else {
+                return res.status(400).send({ message: 'Please try again later', statusCode: 400 })
             }
         }
+
+        if (user.signedByApple) {
+            res.status(200).send({
+                'id': user._id,
+                'msg': "Authorized User! Redirect to login page",
+                'signedByApple': true,
+                'statusCode': 200,
+                'profile_Image': user?.profile_Image ?? null,
+                'userName': user.name,
+                'isNotifyUserEnabled': user?.isNotifyUserEnabled ?? null,
+            });
+        }
+
+        if (user.signedByApple === false) {
+            res.status(409).send({
+                'msg': "Email already exists!. Please sign in by email and password",
+                'signedByApple': false,
+                'statusCode': 409,
+            });
+        }
+
         await connection.client.close()
     } catch (error) {
         console.error("error:", error);
-        res.status(500).send({
-            message: error.msg,
-            signedByGoogle: true,
-            status: 500,
-        });
+        res.status(400).send({ message: error.msg, signedByGoogle: true, status: 400 });
     }
 });
 
