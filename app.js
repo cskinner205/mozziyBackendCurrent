@@ -1095,7 +1095,7 @@ app.post("/compareUploadedEventFaceWithProfilePics", upload.array("images"), asy
                     }
                 }
             }
-            return finalResult.length > 0 ? res.status(200).json(finalResult) : res.json({ msg: "Your profile photo and image face do not match. Give it a try with another one!" })
+            return finalResult.length > 0 ? res.status(200).json(finalResult) :res.status(400).json({ msg: "Your profile photo and image face do not match. Give it a try with another one!" })
         })
         )
         await connection.client.close()
