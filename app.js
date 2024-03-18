@@ -611,13 +611,16 @@ app.post("/api/loginWithApple", async (req, res) => {
             };
             const result = await connection.db.collection("User").insertOne(insertObject);
             if (result.insertedId) {
+                await connection.client.close()
                 return res.status(200).send({ message: "User Created Successfully", id: result.insertedId, signedByApple: true, status: 200 })
             } else {
+                await connection.client.close()
                 return res.status(400).send({ message: 'Please try again later', statusCode: 400 })
             }
         }
 
         if (user.signedByApple) {
+            await connection.client.close()
             res.status(200).send({
                 'id': user._id,
                 'msg': "Authorized User! Redirect to login page",
@@ -630,6 +633,7 @@ app.post("/api/loginWithApple", async (req, res) => {
         }
 
         if (user.signedByApple === false) {
+            await connection.client.close()
             res.status(409).send({
                 'msg': "Email already exists!. Please sign in by email and password",
                 'signedByApple': false,
@@ -1020,6 +1024,7 @@ app.get("/testSendNoti", (req, res) => {
 });
 
 app.post("/compareUploadedEventFaceWithProfilePics", upload.array("images"), async (req, res) => {
+
     try {
         const finalResult = []
         const connection = await dbConnect()
@@ -1043,45 +1048,52 @@ app.post("/compareUploadedEventFaceWithProfilePics", upload.array("images"), asy
             }
 
             const detectSourceface = await rekognition.detectFaces(params1).promise()
+
             if (!detectSourceface.FaceDetails.length) {
                 return res.json({ msg: "No faces were detected in the image." })
             }
 
-            const result = await connection.db.collection("User").find({ profile_Image: { $exists: 1 } }).toArray()
+            const user = await connection.db.collection("User").findOne({ profile_Image: { $exists: 1 }, _id: new ObjectId(req.body.userId) })
 
-            await Promise.all(result.map(async (value) => {
-                if (value.profile_Image.key) {
-                    const TargetImage = {
-                        S3Object: {
-                            Bucket: AWS_BUCKET_NAME,
-                            Name: value.profile_Image.key
-                        }
-                    }
-
-                    const params2 = { Image: TargetImage }
-
-                    const detectTargetImage = await rekognition.detectFaces(params2).promise()
-                    if (detectTargetImage.FaceDetails.length > 0) {
-                        const compareObject = { SourceImage, TargetImage, SimilarityThreshold: 90 }
-
-                        const { FaceMatches } = await rekognition.compareFaces(compareObject).promise()
-
-                        if (FaceMatches && FaceMatches.length > 0) {
-                            const faceMtach = FaceMatches.some((match) => match.Similarity > 90)
-
-                            if (faceMtach) {
-                                finalResult.push(value)
-                                if (typeof value.DEVICEFCMTOKEN === "string") {
-                                    sendNotification(value.DEVICEFCMTOKEN, value.name);
-
-                                }
-                            }
-                        }
-                    }
-
+            if (!user) {
+                if (!user?.profile_Image?.key) {
+                    return res.status(400).json({ message: 'No Profile Photo Found!', status: 400 })
                 }
-            })
-            )
+                return res.status(400).json({ message: 'User Not Found!', status: 400 })
+            }
+
+            const TargetImage = {
+                S3Object: {
+                    Bucket: AWS_BUCKET_NAME,
+                    Name: user.profile_Image.key
+                }
+            }
+
+            const params2 = { Image: TargetImage }
+
+            const detectTargetImage = await rekognition.detectFaces(params2).promise()
+            console.log('detectTargetImage:', detectTargetImage)
+
+            if (!detectTargetImage?.FaceDetails?.length) {
+                return res.status(400).json({ message: 'No Face found in previous uploaded profile picture!', status: 400 })
+            }
+
+            const compareObject = { SourceImage, TargetImage, SimilarityThreshold: 90 }
+
+            const { FaceMatches } = await rekognition.compareFaces(compareObject).promise()
+
+            if (FaceMatches && FaceMatches.length > 0) {
+                console.log('FaceMatches:', FaceMatches)
+                const faceMtach = FaceMatches.some((match) => match.Similarity > 90)
+
+                if (faceMtach) {
+                    finalResult.push(user)
+                    if (typeof user.DEVICEFCMTOKEN === "string") {
+                        sendNotification(user.DEVICEFCMTOKEN, user.name);
+
+                    }
+                }
+            }
             return finalResult.length > 0 ? res.status(200).json(finalResult) : res.json({ msg: "No matching faces found." })
         })
         )
@@ -1090,6 +1102,7 @@ app.post("/compareUploadedEventFaceWithProfilePics", upload.array("images"), asy
         res.status(400).json({ message: err, status: 400 })
     }
 })
+
 
 app.get("/test1", (req, res) => res.send("<a href='www.mozziyapp.com'><h1>hello</h1></a>"));
 
