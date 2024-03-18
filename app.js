@@ -1051,16 +1051,16 @@ app.post("/compareUploadedEventFaceWithProfilePics", upload.array("images"), asy
             const detectSourceface = await rekognition.detectFaces(params1).promise()
 
             if (!detectSourceface.FaceDetails.length) {
-                return res.json({ msg: "No faces were detected in the image." })
+                return res.status(404).json({ msg: "No faces were detected in the image." })
             }
 
             const user = await connection.db.collection("User").findOne({ profile_Image: { $exists: 1 }, _id: new ObjectId(req.body.userId) })
 
             if (!user) {
                 if (!user?.profile_Image?.key) {
-                    return res.status(400).json({ message: 'No Profile Photo Found!', status: 400 })
+                    return res.status(404).json({ message: 'No Profile Photo Found!', statusCode: 404 })
                 }
-                return res.status(400).json({ message: 'User Not Found!', status: 400 })
+                return res.status(404).json({ message: 'User Not Found!', statusCode: 404 })
             }
 
             const TargetImage = {
@@ -1073,10 +1073,9 @@ app.post("/compareUploadedEventFaceWithProfilePics", upload.array("images"), asy
             const params2 = { Image: TargetImage }
 
             const detectTargetImage = await rekognition.detectFaces(params2).promise()
-            console.log('detectTargetImage:', detectTargetImage)
 
             if (!detectTargetImage?.FaceDetails?.length) {
-                return res.status(400).json({ message: 'No Face found in previous uploaded profile picture!', status: 400 })
+                return res.status(404).json({ message: 'No Face found in previous uploaded profile picture!', status: 404 })
             }
 
             const compareObject = { SourceImage, TargetImage, SimilarityThreshold: 90 }
@@ -1095,7 +1094,7 @@ app.post("/compareUploadedEventFaceWithProfilePics", upload.array("images"), asy
                     }
                 }
             }
-            return finalResult.length > 0 ? res.status(200).json(finalResult) :res.status(400).json({ msg: "Your profile photo and image face do not match. Give it a try with another one!" })
+            return finalResult.length > 0 ? res.status(200).json(finalResult) :res.status(404).json({ msg: "Your profile photo and image face do not match. Give it a try with another one!" })
         })
         )
         await connection.client.close()
