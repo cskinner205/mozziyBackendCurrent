@@ -349,49 +349,36 @@ app.get("/test", (req, res) => res.send({ msg: "This is run successfully" }));
 
 /* Register API */
 app.post("/register", async (req, res) => {
-
-    let msg;
     try {
         const connection = await dbConnect()
-        const user = await connection.db.collection("User").findOne({ email: req.body.email });
+
+        const user = await connection.db.collection("User").findOne({ email: req.body.email })
         if (user) {
-            return res.status(400).send({
-                message: "Failed! Email is already in use!",
-                statusCode: 400,
-            });
-        } else {
-            let encryptedPassword = bcrypt.hashSync(req.body.password, salt);
-
-            let data = {
-                'name': req.body.name,
-                'email': req.body.email,
-                'password': encryptedPassword,
-                'createdAt': new Date().toISOString(),
-                'signedByGoogle': false,
-            };
-
-            // Insert the data into the collection
-            const result = await collection.insertOne(data);
-
-            if (result.insertedId) {
-                msg = "success";
-            }
+            await connection.client.close()
+            return res.status(400).send({ message: "Failed! Email is already in use!", statusCode: 400 })
         }
-        await connection.client.close()
+
+        const encryptedPassword = bcrypt.hashSync(req.body.password, salt)
+        const insertObject = {
+            'name': req.body.name,
+            'email': req.body.email,
+            'password': encryptedPassword,
+            'createdAt': new Date().toISOString(),
+            'signedByGoogle': false,
+        };
+
+        // Insert the data into the collection
+        const result = await connection.db.collection("User").insertOne(insertObject)
+
+        if (result.insertedId) {
+            await connection.client.close()
+            return res.status(200).send({ message: "Success!!", statusCode: 200 })
+        }
+
     } catch (error) {
-        console.error("error:", error);
-        if (error) {
-            msg = {
-                msg: error,
-                status: 500,
-                success: false,
-            };
-        }
-    } finally {
-        client.close();
+        return res.status(500).send({ message: error.message, statusCode: 500 })
     }
-    res.send({ msg });
-});
+})
 
 app.post("/createStripeAccount", async (req, res) => {
     const connection = await dbConnect()
