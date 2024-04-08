@@ -1065,23 +1065,23 @@ app.post("/compareUploadedEventFaceWithProfilePics", upload.array("images"), asy
                 return res.status(404).json({ message: 'No Face found in previous uploaded profile picture!', status: 404 })
             }
 
-            const compareObject = { SourceImage, TargetImage, SimilarityThreshold: 90 }
+            // const compareObject = { SourceImage, TargetImage, SimilarityThreshold: 90 }
 
-            const { FaceMatches } = await rekognition.compareFaces(compareObject).promise()
+            // const { FaceMatches } = await rekognition.compareFaces(compareObject).promise()
 
-            if (FaceMatches && FaceMatches.length > 0) {
-                console.log('FaceMatches:', FaceMatches)
-                const faceMtach = FaceMatches.some((match) => match.Similarity > 90)
+            // if (FaceMatches && FaceMatches.length > 0) {
+            //     console.log('FaceMatches:', FaceMatches)
+            //     const faceMtach = FaceMatches.some((match) => match.Similarity > 90)
 
-                if (faceMtach) {
-                    finalResult.push(user)
-                    if (typeof user.DEVICEFCMTOKEN === "string") {
-                        sendNotification(user.DEVICEFCMTOKEN, user.name);
+            //     if (faceMtach) {
+            //         finalResult.push(user)
+            //         if (typeof user.DEVICEFCMTOKEN === "string") {
+            //             sendNotification(user.DEVICEFCMTOKEN, user.name);
 
-                    }
-                }
-            }
-            return finalResult.length > 0 ? res.status(200).json(finalResult) :res.status(404).json({ msg: "Your profile photo and image face do not match. Give it a try with another one!" })
+            //         }
+            //     }
+            // }
+            // return finalResult.length > 0 ? res.status(200).json(finalResult) :res.status(404).json({ msg: "Your profile photo and image face do not match. Give it a try with another one!" })
         })
         )
         await connection.client.close()
