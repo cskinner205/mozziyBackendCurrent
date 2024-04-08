@@ -1012,7 +1012,7 @@ app.get("/testSendNoti", (req, res) => {
 
 
 app.post("/compareUploadedEventFaceWithProfilePics", upload.array("images"), async (req, res) => {
-
+    return res.status(200).json({ msg:req});
     try {
         const finalResult = []
         const connection = await dbConnect()
