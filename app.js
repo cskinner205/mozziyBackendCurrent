@@ -1064,7 +1064,7 @@ app.post("/compareUploadedEventFaceWithProfilePics", upload.array("images"), asy
             if (!detectTargetImage?.FaceDetails?.length) {
                 return res.status(404).json({ message: 'No Face found in previous uploaded profile picture!', status: 404 })
             }
-
+            return res.status(200).json({ msg: "successfull!!"});
             // const compareObject = { SourceImage, TargetImage, SimilarityThreshold: 90 }
 
             // const { FaceMatches } = await rekognition.compareFaces(compareObject).promise()
