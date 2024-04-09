@@ -433,8 +433,10 @@ app.post("/loginWithGoogle", async (req, res) => {
     try {
         let { email, name } = req.body;
 
-        const connection = await dbConnect()
-        const user = await connection.db.collection("User").findOne({ email: email });
+        const connection = await dbConnect();
+        const collection = connection.db.collection("User"); // Obtain reference to the User collection
+
+        const user = await collection.findOne({ email: email });
 
         if (user) {
             if (user.signedByGoogle) {
@@ -445,9 +447,7 @@ app.post("/loginWithGoogle", async (req, res) => {
                     'statusCode': 200,
                     'profile_Image': user?.profile_Image ? user?.profile_Image : null,
                     'userName': user.name,
-                    'isNotifyUserEnabled': user?.isNotifyUserEnabled
-                        ? user?.isNotifyUserEnabled
-                        : null,
+                    'isNotifyUserEnabled': user?.isNotifyUserEnabled ? user?.isNotifyUserEnabled : null,
                 });
             } else if (user.signedByGoogle === false) {
                 res.status(409).send({
@@ -457,7 +457,7 @@ app.post("/loginWithGoogle", async (req, res) => {
                 });
             }
         } else {
-            data = {
+            const data = {
                 email,
                 name,
                 image: req?.body?.photo ? req?.body?.photo : null,
@@ -465,7 +465,8 @@ app.post("/loginWithGoogle", async (req, res) => {
                 createdAt: new Date().toISOString(),
                 signedByGoogle: true,
             };
-            const result = await collection.insertOne(data);
+            const result = await collection.insertOne(data); // Use the collection obtained earlier
+
             if (result.insertedId) {
                 res.status(200).send({
                     message: "User Created Successfully",
@@ -476,7 +477,7 @@ app.post("/loginWithGoogle", async (req, res) => {
             }
         }
 
-        await connection.client.close()
+        await connection.client.close();
     } catch (error) {
         console.error("Errors>>>>:", error);
         res.status(500).send({
@@ -488,6 +489,65 @@ app.post("/loginWithGoogle", async (req, res) => {
         client.close();
     }
 });
+// app.post("/loginWithGoogle", async (req, res) => {
+//     try {
+//         let { email, name } = req.body;
+
+//         const connection = await dbConnect()
+//         const user = await connection.db.collection("User").findOne({ email: email });
+
+//         if (user) {
+//             if (user.signedByGoogle) {
+//                 res.status(200).send({
+//                     'id': user._id,
+//                     'msg': "Authorized User! Redirect to login page",
+//                     'signedByGoogle': true,
+//                     'statusCode': 200,
+//                     'profile_Image': user?.profile_Image ? user?.profile_Image : null,
+//                     'userName': user.name,
+//                     'isNotifyUserEnabled': user?.isNotifyUserEnabled
+//                         ? user?.isNotifyUserEnabled
+//                         : null,
+//                 });
+//             } else if (user.signedByGoogle === false) {
+//                 res.status(409).send({
+//                     msg: "Email already exists!. Please sign in by email and password",
+//                     signedByGoogle: false,
+//                     statusCode: 409,
+//                 });
+//             }
+//         } else {
+//             data = {
+//                 email,
+//                 name,
+//                 image: req?.body?.photo ? req?.body?.photo : null,
+//                 emailVerified: null,
+//                 createdAt: new Date().toISOString(),
+//                 signedByGoogle: true,
+//             };
+//             const result = await collection.insertOne(data);
+//             if (result.insertedId) {
+//                 res.status(200).send({
+//                     message: "User Created Successfully",
+//                     id: result.insertedId,
+//                     signedByGoogle: true,
+//                     status: 200,
+//                 });
+//             }
+//         }
+
+//         await connection.client.close()
+//     } catch (error) {
+//         console.error("Errors>>>>:", error);
+//         res.status(500).send({
+//             message: error.msg,
+//             signedByGoogle: true,
+//             status: 500,
+//         });
+//     } finally {
+//         client.close();
+//     }
+// });
 
 app.post("/api/login", async (req, resp) => {
     try {
