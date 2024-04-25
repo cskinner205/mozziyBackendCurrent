@@ -45,7 +45,13 @@ const s3 = new AWS.S3();
 
 app.use(express.json());
 
-const upload = multer();
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5 MB per file
+      files: 10 // Adjust this number as needed for the maximum number of files
+    }
+  });
 
 app.post("/api/faceScanner", upload.array("images"), async (req, res) => {
     try {
@@ -268,7 +274,7 @@ app.post("/api/create-payment-intent", async (req, res) => {
     }
 });
 
-app.post("/api/upload", upload.array("images"), async (req, res) => {
+app.post("/api/upload", upload.array("images", 10), async (req, res) => {
     try {
         const connection = await dbConnect();
         let connectId = await connection.db.collection("User").findOne({ _id: new ObjectId(req.body.userId) });
