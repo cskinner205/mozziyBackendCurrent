@@ -1,0 +1,11 @@
+# Ensure HTTPS Redirection
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Base Directory
+RewriteBase /~rootadmin/
+
+# Proxy Requests to Node.js Application
+RewriteCond %{REQUEST_URI} !^/backendmozziy
+RewriteRule ^(.*)$ http://localhost:3500/$1 [P,L]
